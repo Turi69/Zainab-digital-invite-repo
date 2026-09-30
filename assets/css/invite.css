@@ -1335,15 +1335,18 @@ a {
 }
 .date__row {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  /* Equal side columns that never grow to fit their label, so the day number
+     (and the month above it) stays on the centre line on any screen. */
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
 }
 .date__side {
-  padding-inline: var(--s-4);
-  font-size: clamp(0.88rem, 3.9vw, 1.05rem);
+  padding-inline: clamp(0.5rem, 3vw, 1rem);
+  font-size: clamp(0.72rem, 3.6vw, 1.05rem);
   font-weight: 600;
-  letter-spacing: 0.06em;
+  letter-spacing: clamp(0.02em, 0.5vw, 0.06em);
   text-transform: uppercase;
+  white-space: nowrap;
 }
 .date__side--l { text-align: right; }
 .date__side--r { text-align: left; }
@@ -2278,8 +2281,7 @@ a {
 /* Very narrow phones: keep the date row from crowding. */
 @media (max-width: 359px) {
   :root { --gutter: var(--s-6); }
-  .date__side { padding-inline: var(--s-2); }
-  .date__day { min-width: 6rem; }
+  .date__day { min-width: 5.5rem; }
 }
 
 @media (pointer: coarse) {
