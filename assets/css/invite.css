@@ -2093,11 +2093,15 @@ a {
 }
 
 /* ---- Envelope --------------------------------------------------------------- */
-.envelope {
-  filter:
-    drop-shadow(0 2px 2px rgba(10, 2, 6, 0.45))
-    drop-shadow(0 14px 18px rgba(10, 2, 6, 0.35))
-    drop-shadow(0 34px 44px rgba(10, 2, 6, 0.45));
+/* The envelope is a rectangle, so a layered box-shadow on the paper does the
+   job of three stacked drop-shadow filters at a fraction of the cost. */
+.envelope { filter: none; }
+.envelope__back {
+  box-shadow:
+    inset 0 0 0 1px rgba(212, 160, 65, 0.45), inset 0 0 0 6px #5A0428, inset 0 0 0 7px rgba(212, 160, 65, 0.3),
+    0 2px 2px rgba(10, 2, 6, 0.45),
+    0 14px 18px rgba(10, 2, 6, 0.35),
+    0 34px 44px rgba(10, 2, 6, 0.45);
 }
 
 /* Inside of the envelope: a burgundy damask liner, seen once the flap opens. */
@@ -2305,7 +2309,6 @@ a {
   .keepsake { opacity: 1; translate: 0 0; rotate: 0deg; }
   .watermark { opacity: 0.1; scale: 1; rotate: 0deg; }
   .piece--burgundy::after, .piece--hero::after, .piece--note::after, .piece--colours::after, .arch__window::after, .monogram::after, .swatch__silk::after { animation: none; }
-  .ambient { display: none; }
   .stage__hint span { animation: none; opacity: 0.9; }
   .cue svg { animation: none; }
 }

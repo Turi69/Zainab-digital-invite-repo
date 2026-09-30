@@ -902,8 +902,13 @@
   function startAmbient() {
     if (ambient) return;
     var canvas = el.ambient;
-    if (!canvas || reduceMotion.matches || !canvas.getContext) return;
+    if (!canvas || !canvas.getContext) return;
     var ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    // With Reduce Motion on (Settings, Accessibility, Motion on an iPhone) the
+    // petals still drift, but few, slow and steady: no gusts, no bursts, no
+    // response to scrolling or touch, and the florals on the card stay still.
+    var calm = reduceMotion.matches;
     var dpr = Math.min(window.devicePixelRatio || 1, 2);
     var sprites = getSprites();
     var S = sprites.size;
@@ -964,8 +969,8 @@
 
     resize();
     var area = w * h;
-    var flowerCount = Math.round(Math.min(36, Math.max(14, area / 24000)));
-    var moteCount = Math.round(Math.min(40, Math.max(16, area / 30000)));
+    var flowerCount = calm ? 9 : Math.round(Math.min(36, Math.max(14, area / 24000)));
+    var moteCount = calm ? 10 : Math.round(Math.min(40, Math.max(16, area / 30000)));
     for (var i = 0; i < flowerCount; i++) flowers.push(flower(null, 'scatter'));
     for (var j = 0; j < moteCount; j++) motes.push(mote(null, true));
 
@@ -995,12 +1000,12 @@
 
       // A breeze most of the time, and every so often a proper gust.
       var n = 0.5 + 0.5 * (0.55 * Math.sin(time * 0.31) + 0.3 * Math.sin(time * 0.77 + 1.3) + 0.15 * Math.sin(time * 1.93 + 0.4));
-      gust = Math.pow(Math.max(0, n), 2.4);
+      gust = calm ? 0 : Math.pow(Math.max(0, n), 2.4);
       extra *= Math.pow(0.975, dt);
-      var windX = 0.7 + gust * 3.2 + extra;
+      var windX = calm ? 0.3 : 0.7 + gust * 3.2 + extra;
       var windY = 0.12 + Math.sin(time * 0.5) * 0.12;
 
-      var shift = Math.max(-140, Math.min(140, scrollDelta));
+      var shift = calm ? 0 : Math.max(-140, Math.min(140, scrollDelta));
       scrollDelta = 0;
 
       ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -1053,7 +1058,7 @@
       ctx.globalAlpha = 1;
 
       // The printed florals lean into the same gust.
-      bending.forEach(function (b) {
+      if (!calm) bending.forEach(function (b) {
         var bend = b.__sign * (0.7 * Math.sin(time * 1.3 + b.__phase) + gust * 2.6 + extra * 0.6);
         b.style.setProperty('--bend', bend.toFixed(2));
       });
@@ -1076,6 +1081,7 @@
     ambient = {
       // A burst of extra flowers on a stronger gust; they are not recycled.
       flurry: function (count, from) {
+        if (calm) return;
         for (var i = 0; i < count; i++) {
           var p = flower(null, from === 'top' ? 'top' : 'left');
           if (from !== 'top') { p.x = -20 - Math.random() * 260; p.y = Math.random() * h * 0.9; }
@@ -1086,6 +1092,7 @@
       },
       // A puff of air from a touch: nearby flowers are pushed away and spin.
       puff: function (x, y) {
+        if (calm) return;
         extra += 0.5;
         flowers.forEach(function (p) {
           var dx = p.x - x, dy = p.y - y;
@@ -1100,6 +1107,7 @@
     };
 
     canvas.classList.add('is-on');
+    window.__zmPetals = { calm: calm, count: function () { return flowers.length; }, running: function () { return running; } };
     requestAnimationFrame(frame);
   }
 
@@ -1264,6 +1272,27 @@
 
   /* ── Boot ─────────────────────────────────────────────────────────────── */
 
+  // ?debug in the address shows a small panel for checking a phone.
+  function debugPanel() {
+    if (!/[?&]debug\b/.test(location.search)) return;
+    var box = document.createElement('div');
+    box.style.cssText = 'position:fixed;left:8px;bottom:8px;z-index:9999;padding:8px 10px;border-radius:8px;' +
+      'background:rgba(0,0,0,.78);color:#fff;font:12px/1.4 ui-monospace,monospace;pointer-events:none;white-space:pre';
+    document.body.appendChild(box);
+    var frames = 0;
+    (function count() { frames++; requestAnimationFrame(count); })();
+    window.setInterval(function () {
+      var petals = window.__zmPetals;
+      box.textContent =
+        'fps            ' + frames + '\n' +
+        'reduce motion  ' + reduceMotion.matches + '\n' +
+        'petals         ' + (petals ? (petals.running() ? 'running' : 'paused') + ', ' + petals.count() + (petals.calm ? ', calm' : '') : 'off') + '\n' +
+        'hidden tab     ' + document.hidden + '\n' +
+        'screen         ' + innerWidth + 'x' + innerHeight + ' @' + devicePixelRatio;
+      frames = 0;
+    }, 1000);
+  }
+
   // Always open at the top of the card, never at a remembered scroll position.
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 
@@ -1272,6 +1301,7 @@
     window.Handwriting.load().catch(function () {});
     // Petals drift behind the gate and the envelope from the first second.
     startAmbient();
+    debugPanel();
 
     var stored = null;
     try { stored = localStorage.getItem(STORAGE_KEY); } catch (err) { /* no storage */ }
