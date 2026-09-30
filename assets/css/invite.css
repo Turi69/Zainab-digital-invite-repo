@@ -1118,7 +1118,7 @@ a {
 /* ---- The portrait (in the hero) ---------------------------------------------- */
 .arch {
   position: relative;
-  width: min(68%, 310px);
+  width: min(86%, 400px);
   aspect-ratio: 4 / 5;
   margin: var(--s-4) auto 0;
 }
@@ -1201,16 +1201,16 @@ a {
   z-index: 4;
   display: grid;
   place-items: center;
-  width: 124px;
+  width: 88px;
   aspect-ratio: 1;
-  margin: -60px auto 0;
+  margin: -44px auto 0;
   border-radius: 50%;
   background: radial-gradient(circle at 50% 38%, #82103C 0%, var(--wine-deep) 72%);
   box-shadow:
     0 0 0 1px rgba(251, 230, 123, 0.6),
-    0 0 0 6px #5A0428,
-    0 0 0 7px rgba(251, 230, 123, 0.32),
-    0 20px 32px rgba(10, 0, 4, 0.5);
+    0 0 0 4px #5A0428,
+    0 0 0 5px rgba(251, 230, 123, 0.32),
+    0 12px 22px rgba(10, 0, 4, 0.45);
 }
 .monogram[data-in] { transform: scale(1.7) rotate(-16deg); filter: blur(4px); transition-duration: 0.5s, 0.9s, 0.6s; transition-timing-function: var(--ease-in), cubic-bezier(0.3, 1.5, 0.5, 1), var(--ease-out); }
 .monogram img { width: 70%; height: auto; }

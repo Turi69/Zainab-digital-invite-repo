@@ -16,24 +16,18 @@ node dev-server.js
 ```
 
 Then open <http://localhost:4173>. This small server behaves like the Vercel
-deployment: static files, the two functions in `api/`, and nothing served from
-`private/`. (A plain static server will show the page, but the gate and the
-music need the functions.)
+deployment: static files, the guest function in `api/`, and nothing served from
+`private/`. (A plain static server will show the page, but the gate needs the
+function.)
 
 ## Deploy it
 
 On Vercel, import the GitHub repo (or run `npx vercel` in this folder). No build
 step or framework setting is needed; `vercel.json` handles the rest.
 
-Set one environment variable in the Vercel project (Settings, Environment
-Variables):
-
-| Name | Value |
-|---|---|
-| `INVITE_SECRET` | Any long random string. It signs the passes the gate hands out. |
-
-Optional: `GUESTS_JSON`, the guest list as JSON, if you would rather keep it
-out of the repository altogether (it then overrides `private/guests.json`).
+Optional: set `GUESTS_JSON` in the Vercel project (Settings, Environment
+Variables) to the guest list as JSON, if you would rather keep it out of the
+repository altogether. It then overrides `private/guests.json`.
 
 When you change a CSS or JS file, bump the `?v=` number on its link in
 `index.html` so returning guests do not get a stale cached copy.
@@ -43,16 +37,10 @@ When you change a CSS or JS file, bump the `?v=` number on its link in
 - **The guest list** lives in `private/guests.json`, on the server only. The
   gate sends the typed name to `api/guest` and gets back that one guest's
   salutation and note. The list itself never reaches the browser.
-- **The song** lives in `private/` and has no public URL. After the gate,
-  `api/song` sends it in parts, scrambled with a key that is new for every
-  visit; the page unscrambles it in memory and plays it through Web Audio.
-  The browser's network panel only ever records scrambled bytes, so there is
-  no file to save from the inspect panel. (Anyone determined enough to write
-  code against the page could still reconstruct audio they can hear; this
-  stops casual copying, not a programmer.)
+- **The song** is an ordinary file in `assets/audio/` and can be downloaded.
 - `vercel.json` blocks `/private` and `/api/_lib.js` from being fetched directly.
 - **The GitHub repository is public**, so anyone who finds it can read
-  `private/`. Make the repository private if that matters; Vercel deploys from
+  `private/guests.json`. Make the repository private if that matters; Vercel deploys from
   private repositories the same way.
 
 ## The arrival
@@ -100,7 +88,7 @@ first section and tucks away at the RSVP.
 
 ## Music
 
-`private/running-home-to-you.mp3` plays from the moment the guest taps the
+`assets/audio/running-home-to-you.mp3` plays from the moment the guest taps the
 seal (browsers only allow sound after a tap). It fades in to 40% volume over
 3 seconds, fades out over the last 4 seconds of the track and fades back in as
 it loops, for as long as the page is open. It fades out when the tab is hidden
@@ -109,8 +97,8 @@ and back in on return. The heart button at the top right beats with the music
 it; a speaker badge and a brief "Tap to mute" label say what it does, and the
 guest's choice is remembered.
 
-To change the track, replace that file (the name is set in `api/song.js`).
-Levels and fade lengths are `LEVEL`, `FADE_IN` and `FADE_OUT` in `assets/js/invite.js`.
+To change the track, replace that file (or edit `SRC` in `assets/js/invite.js`).
+Levels and fade lengths are `LEVEL`, `FADE_IN` and `FADE_OUT` in the same place.
 The current file is 6.7 MB at 320 kbps; re-encoding it to 128 kbps would bring
 it to about 2.7 MB with no audible loss through phone speakers.
 

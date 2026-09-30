@@ -36,10 +36,7 @@
 
   /* ── Guest lookup ─────────────────────────────────────────────────────
      The list lives on the server (/api/guest). The page only ever learns the
-     salutation and note of the name that was typed, plus a signed pass that
-     unlocks the music.                                                    */
-
-  var pass = null;   // { token, key } from the gate
+     salutation and note of the name that was typed.                       */
 
   function askGate(name, anyway) {
     var request = fetch('api/guest', {
@@ -49,12 +46,6 @@
     }).then(function (res) {
       if (!res.ok) throw new Error('gate ' + res.status);
       return res.json();
-    }).then(function (reply) {
-      if (reply && reply.ok) {
-        pass = { token: reply.token, key: reply.key };
-        music.prepare(pass);
-      }
-      return reply;
     });
     // Never leave a guest waiting on a slow connection.
     var timeout = new Promise(function (resolve, reject) {
@@ -199,8 +190,6 @@
     applyGuest(typed ? { salutation: typed } : null);
     // They have already been let in once; do not make them type it again.
     rememberGuest(typed);
-    // Still ask for a pass, so the music plays for them too.
-    askGate(typed, true).catch(function () {});
     hideGate();
   });
 
@@ -1122,160 +1111,81 @@
      and back in on return. The guest can mute it; that choice is kept.   */
 
   var music = (function () {
-    /* The track has no public URL. With the pass from the gate it is fetched
-       from /api/song in scrambled parts, unscrambled in memory, decoded, and
-       played as an AudioBuffer, so there is never a playable file for the
-       inspect panel to save. It fades in to 40% on the tap that opens the
-       envelope, fades out before the end and back in as it loops, rests when
-       the tab is hidden, and the heart beats to its bass.                  */
+    var SRC = 'assets/audio/running-home-to-you.mp3';
     var LEVEL = 0.4, FADE_IN = 3, FADE_OUT = 4;
     var MUTE_KEY = 'zm-invite-muted';
-    var AC = window.AudioContext || window.webkitAudioContext;
 
     var button = document.getElementById('soundToggle');
     var hint = document.getElementById('soundHint');
+    var audio = new Audio(SRC);
+    audio.preload = 'auto';
 
-    var ctx = null, gain = null, analyser = null, bins = null;
-    var buffer = null, loading = null;
-    var source = null, startedAt = 0;
-    var started = false, playing = false;
+    var ctx = null, gain = null, analyser = null, bins = null, fallbackTimer = null;
+    var started = false, fadingOut = false;
     var muted = false;
     try { muted = localStorage.getItem(MUTE_KEY) === '1'; } catch (err) { /* no storage */ }
 
-    function context() {
-      if (ctx || !AC) return ctx;
-      ctx = new AC();
-      gain = ctx.createGain();
-      gain.gain.value = 0;
-      gain.connect(ctx.destination);
-      // Taps the signal after the gain, so the heart rests when muted.
-      analyser = ctx.createAnalyser();
-      analyser.fftSize = 256;
-      analyser.smoothingTimeConstant = 0.72;
-      gain.connect(analyser);
-      bins = new Uint8Array(analyser.frequencyBinCount);
-      if (button) button.classList.add('has-analyser');
-      return ctx;
-    }
-
-    // The same keystream as api/_lib.js.
-    function mix(x) {
-      x ^= x >>> 16; x = Math.imul(x, 0x85ebca6b);
-      x ^= x >>> 13; x = Math.imul(x, 0xc2b2ae35);
-      x ^= x >>> 16;
-      return x >>> 0;
-    }
-    function unscramble(bytes, k, offset) {
-      var base = offset >>> 2, word = 0;
-      for (var i = 0; i < bytes.length; i++) {
-        if ((i & 3) === 0) word = mix(mix(((k[0] ^ Math.imul(base + (i >>> 2), 0x9E3779B1)) >>> 0) ^ k[1]) ^ k[2]);
-        bytes[i] ^= (word >>> ((i & 3) * 8)) & 255;
+    function connect() {
+      if (ctx) return;
+      try {
+        var AC = window.AudioContext || window.webkitAudioContext;
+        ctx = new AC();
+        gain = ctx.createGain();
+        gain.gain.value = 0;
+        ctx.createMediaElementSource(audio).connect(gain);
+        gain.connect(ctx.destination);
+        // Taps the signal after the gain, so the heart rests when muted.
+        analyser = ctx.createAnalyser();
+        analyser.fftSize = 256;
+        analyser.smoothingTimeConstant = 0.72;
+        gain.connect(analyser);
+        bins = new Uint8Array(analyser.frequencyBinCount);
+        if (button) button.classList.add('has-analyser');
+      } catch (err) {
+        ctx = null; gain = null;
+        audio.volume = 0;
       }
     }
 
-    function fetchPart(p, n) {
-      return fetch('api/song?t=' + encodeURIComponent(p.token) + '&p=' + n, { cache: 'no-store' })
-        .then(function (res) {
-          if (!res.ok) throw new Error('song ' + res.status);
-          var parts = parseInt(res.headers.get('X-Song-Parts') || '1', 10);
-          return res.arrayBuffer().then(function (buf) { return { buf: buf, parts: parts }; });
-        });
-    }
-
-    function decode(arrayBuffer) {
-      return new Promise(function (resolve, reject) {
-        var out = ctx.decodeAudioData(arrayBuffer, resolve, reject);
-        if (out && out.then) out.then(resolve, reject);
-      });
-    }
-
-    // Called as soon as the gate issues a pass, so the track is ready by the tap.
-    function prepare(p) {
-      if (loading || buffer || !AC || !p) return;
-      context();
-      loading = fetchPart(p, 0)
-        .then(function (first) {
-          var rest = [];
-          for (var i = 1; i < first.parts; i++) rest.push(fetchPart(p, i));
-          return Promise.all(rest).then(function (others) {
-            var chunks = [first.buf].concat(others.map(function (o) { return o.buf; }));
-            var total = chunks.reduce(function (n, c) { return n + c.byteLength; }, 0);
-            var all = new Uint8Array(total), offset = 0;
-            chunks.forEach(function (c) {
-              var bytes = new Uint8Array(c);
-              unscramble(bytes, p.key, offset);
-              all.set(bytes, offset);
-              offset += bytes.length;
-            });
-            return decode(all.buffer);
-          });
-        })
-        .then(function (decoded) {
-          buffer = decoded;
-          if (started && !muted && !document.hidden) begin();
-          render();
-        })
-        .catch(function () { loading = null; });
-    }
-
-    // Glide to `level`, keeping the fade-out scheduled ahead of the track's end.
-    function fadeTo(level, secs) {
-      if (!ctx) return;
-      var t = ctx.currentTime;
-      gain.gain.cancelScheduledValues(t);
-      gain.gain.setValueAtTime(gain.gain.value, t);
-      gain.gain.linearRampToValueAtTime(level, t + Math.max(0.05, secs));
-      if (level > 0 && buffer && playing) {
-        var end = startedAt + buffer.duration;
-        var from = Math.max(t + secs, end - FADE_OUT);
-        if (from < end) {
-          gain.gain.setValueAtTime(level, from);
-          gain.gain.linearRampToValueAtTime(0, end);
-        }
+    // Glide the volume to `to` over `secs` seconds.
+    function ramp(to, secs) {
+      if (gain) {
+        var t = ctx.currentTime;
+        gain.gain.cancelScheduledValues(t);
+        gain.gain.setValueAtTime(gain.gain.value, t);
+        gain.gain.linearRampToValueAtTime(to, t + Math.max(0.05, secs));
+        return;
       }
+      window.clearInterval(fallbackTimer);
+      var from = audio.volume, steps = Math.max(1, Math.round(secs * 20)), i = 0;
+      fallbackTimer = window.setInterval(function () {
+        i += 1;
+        audio.volume = Math.min(1, Math.max(0, from + (to - from) * (i / steps)));
+        if (i >= steps) window.clearInterval(fallbackTimer);
+      }, 50);
     }
 
-    // Start the track from the top; when it ends it starts again, faded in.
-    function begin() {
-      if (!buffer || !ctx) return;
-      if (source) { source.onended = null; try { source.stop(); } catch (err) { /* already stopped */ } }
-      var s = ctx.createBufferSource();
-      s.buffer = buffer;
-      s.connect(gain);
-      s.onended = function () { if (s === source && playing && !muted) begin(); };
-      source = s;
-      startedAt = ctx.currentTime;
-      playing = true;
-      gain.gain.cancelScheduledValues(startedAt);
-      gain.gain.setValueAtTime(0, startedAt);
-      s.start(startedAt);
-      fadeTo(LEVEL, FADE_IN);
+    function play(fade) {
+      if (ctx && ctx.state === 'suspended') ctx.resume();
+      var attempt = audio.play();
+      if (attempt && attempt.then) {
+        attempt.then(function () { ramp(LEVEL, fade); render(); })
+               .catch(function () { render(); });
+      } else {
+        ramp(LEVEL, fade);
+      }
       render();
     }
 
-    function quiet(secs) {
-      if (!ctx) return;
-      fadeTo(0, secs);
-      window.setTimeout(function () {
-        if ((muted || document.hidden) && ctx.state === 'running') ctx.suspend();
-        render();
-      }, secs * 1000 + 60);
-    }
-
-    function loud(secs) {
-      if (!ctx) return;
-      var resumed = ctx.state === 'suspended' ? ctx.resume() : Promise.resolve();
-      resumed.then(function () {
-        if (!buffer) return;
-        if (!playing) begin(); else fadeTo(LEVEL, secs);
-        render();
-      });
+    function pause(fade) {
+      ramp(0, fade);
+      window.setTimeout(function () { if (muted || document.hidden) audio.pause(); render(); }, fade * 1000 + 60);
     }
 
     // Drive the heart from the bass end of the spectrum.
     var beating = false, floor = 0;
     function beat() {
-      if (!analyser || !playing || muted || document.hidden || ctx.state !== 'running') {
+      if (!analyser || audio.paused || muted || document.hidden) {
         beating = false;
         if (button) button.style.setProperty('--beat', '0');
         return;
@@ -1294,26 +1204,38 @@
 
     function render() {
       if (!button) return;
-      var on = started && !muted && playing && ctx && ctx.state === 'running';
+      var on = started && !muted && !audio.paused;
       if (on && analyser && !beating) { beating = true; requestAnimationFrame(beat); }
-      button.classList.toggle('is-playing', !!on);
+      button.classList.toggle('is-playing', on);
       button.setAttribute('aria-pressed', String(!muted));
       button.setAttribute('aria-label', muted ? 'Play music' : 'Mute music');
       if (hint) hint.textContent = muted ? 'Tap to play' : 'Tap to mute';
     }
 
+    // Fade out ahead of the end, then loop back in with a fade.
+    audio.addEventListener('timeupdate', function () {
+      if (fadingOut || !audio.duration || muted) return;
+      var left = audio.duration - audio.currentTime;
+      if (left <= FADE_OUT) { fadingOut = true; ramp(0, left); }
+    });
+    audio.addEventListener('ended', function () {
+      fadingOut = false;
+      audio.currentTime = 0;
+      if (!muted && !document.hidden) play(FADE_IN);
+    });
+
     document.addEventListener('visibilitychange', function () {
-      if (!started || muted || !ctx) return;
-      if (document.hidden) quiet(0.6);
-      else loud(1.5);
+      if (!started || muted) return;
+      if (document.hidden) pause(0.6);
+      else play(1.5);
     });
 
     if (button) {
       button.addEventListener('click', function () {
         muted = !muted;
         try { localStorage.setItem(MUTE_KEY, muted ? '1' : '0'); } catch (err) { /* no storage */ }
-        if (muted) quiet(0.8);
-        else { started = true; context(); loud(1.2); }
+        if (muted) pause(0.8);
+        else { if (!started) { started = true; connect(); } play(1.2); }
         render();
         // Confirm the new state in words for a moment.
         button.classList.add('is-hinting');
@@ -1323,7 +1245,6 @@
     }
 
     return {
-      prepare: prepare,
       // Called from the envelope tap, which counts as the user gesture.
       start: function () {
         if (button) {
@@ -1334,10 +1255,9 @@
         }
         if (started) return;
         started = true;
-        context();
-        if (!ctx) return;
-        if (muted) { render(); return; }
-        loud(FADE_IN);
+        connect();
+        if (!muted) play(FADE_IN);
+        render();
       }
     };
   })();
@@ -1357,7 +1277,7 @@
     try { stored = localStorage.getItem(STORAGE_KEY); } catch (err) { /* no storage */ }
 
     if (stored) {
-      // Someone who has opened it before: fetch their note and a fresh pass,
+      // Someone who has opened it before: fetch their note,
       // then go straight to the envelope.
       el.gate.hidden = true;
       askGate(stored, true)

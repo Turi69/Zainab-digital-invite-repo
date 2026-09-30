@@ -10,11 +10,11 @@ const path = require('path');
 const ROOT = __dirname;
 const PORT = process.env.PORT || 4173;
 const TYPES = {
-  '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.js': 'text/javascript',
+  '.mp3': 'audio/mpeg', '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.js': 'text/javascript',
   '.json': 'application/json', '.svg': 'image/svg+xml', '.png': 'image/png',
   '.webp': 'image/webp', '.jpg': 'image/jpeg', '.ttf': 'font/ttf', '.ico': 'image/x-icon'
 };
-const api = { '/api/guest': require('./api/guest'), '/api/song': require('./api/song') };
+const api = { '/api/guest': require('./api/guest') };
 
 http.createServer(function (req, res) {
   const url = new URL(req.url, 'http://localhost');
