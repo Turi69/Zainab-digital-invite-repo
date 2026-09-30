@@ -174,7 +174,7 @@
       : 'You will be in our hearts on the day, and we will raise a glass to you.';
     box.querySelector('[data-reply-resend]').href = yes ? guest.links[r.choice || 'both'] : guest.links.no;
     var plan = box.querySelector('[data-journey-open]');
-    if (plan) plan.parentElement.hidden = !yes;
+    if (plan) plan.closest('.reply__journey').hidden = !yes;
 
     if (animate && !reduceMotion.matches) {
       void box.offsetWidth;
@@ -298,7 +298,7 @@
       '2. Compare the 2 or 3 best routes. Consider flights into Victor Attah International Airport, Uyo (QUO), including connections through Lagos, Abuja or Port Harcourt, and road travel by coach or car where it makes sense from my location.',
       '3. For each route give the typical journey time, a rough price range in my local currency and in naira, the airlines or coach companies that run it, and how often it runs.',
       '4. Tell me how to get from the airport or bus park to the venue, and roughly what that costs.',
-      '5. Suggest 2 or 3 well-reviewed places to stay near the venue.',
+      '5. Find 3 or 4 good-value hotels close to ' + (events.length > 1 ? 'the venues (ideally one that works for both)' : 'the venue') + ': well reviewed, clean and safe, but kind on the budget. For each give the price per night in naira and my local currency, how far it is from the venue, what guests praise or complain about, and where to book it.',
       '6. Add practical tips: how early to book for mid-November, any visa or travel documents if I am coming from abroad, and road safety and timing for any overland legs.',
       'Keep it clear and easy to follow on a phone.'
     ].join('\n');

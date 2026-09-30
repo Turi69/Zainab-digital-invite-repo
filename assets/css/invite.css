@@ -2487,7 +2487,15 @@ html.is-attending { overflow: hidden; }
   color: var(--on-dark-soft);
   text-wrap: balance;
 }
-.reply .actions--rsvp { margin-top: var(--s-6); }
+.reply__journey { margin-top: var(--s-8); }
+.reply__journey[hidden] { display: none; }
+.reply__ask {
+  font-family: var(--font-body);
+  font-size: 1.02rem;
+  font-style: italic;
+  color: var(--on-dark-soft);
+}
+.reply .actions--rsvp { margin-top: var(--s-3); }
 .reply__links {
   display: flex;
   flex-wrap: wrap;
@@ -2522,7 +2530,7 @@ html.is-attending { overflow: hidden; }
 .reply.is-stamped .reply__answer  { animation-delay: 0.45s; }
 .reply.is-stamped .reply__detail  { animation-delay: 0.55s; }
 .reply.is-stamped .reply__thanks  { animation-delay: 0.65s; }
-.reply.is-stamped .actions--rsvp,
+.reply.is-stamped .reply__journey,
 .reply.is-stamped .reply__links { animation: reply-line 0.7s var(--ease-out) 0.8s both; }
 @keyframes reply-rise { from { opacity: 0; transform: translateY(18px) scale(0.97); } to { opacity: 1; transform: none; } }
 @keyframes reply-line { from { opacity: 0; translate: 0 8px; } to { opacity: 1; translate: 0 0; } }
