@@ -11,21 +11,49 @@ A static, single-page invitation. Three acts:
 
 ## Run it
 
-No build step.
-
 ```bash
-python -m http.server 4173
+node dev-server.js
 ```
 
-Then open <http://localhost:4173>.
+Then open <http://localhost:4173>. This small server behaves like the Vercel
+deployment: static files, the two functions in `api/`, and nothing served from
+`private/`. (A plain static server will show the page, but the gate and the
+music need the functions.)
 
 ## Deploy it
 
-It is a static folder. Drag it onto [Netlify Drop](https://app.netlify.com/drop),
-or push it and enable GitHub Pages (Settings → Pages → Source: `main` / root).
+On Vercel, import the GitHub repo (or run `npx vercel` in this folder). No build
+step or framework setting is needed; `vercel.json` handles the rest.
+
+Set one environment variable in the Vercel project (Settings, Environment
+Variables):
+
+| Name | Value |
+|---|---|
+| `INVITE_SECRET` | Any long random string. It signs the passes the gate hands out. |
+
+Optional: `GUESTS_JSON`, the guest list as JSON, if you would rather keep it
+out of the repository altogether (it then overrides `private/guests.json`).
 
 When you change a CSS or JS file, bump the `?v=` number on its link in
 `index.html` so returning guests do not get a stale cached copy.
+
+## What stays private
+
+- **The guest list** lives in `private/guests.json`, on the server only. The
+  gate sends the typed name to `api/guest` and gets back that one guest's
+  salutation and note. The list itself never reaches the browser.
+- **The song** lives in `private/` and has no public URL. After the gate,
+  `api/song` sends it in parts, scrambled with a key that is new for every
+  visit; the page unscrambles it in memory and plays it through Web Audio.
+  The browser's network panel only ever records scrambled bytes, so there is
+  no file to save from the inspect panel. (Anyone determined enough to write
+  code against the page could still reconstruct audio they can hear; this
+  stops casual copying, not a programmer.)
+- `vercel.json` blocks `/private` and `/api/_lib.js` from being fetched directly.
+- **The GitHub repository is public**, so anyone who finds it can read
+  `private/`. Make the repository private if that matters; Vercel deploys from
+  private repositories the same way.
 
 ## The arrival
 
@@ -72,7 +100,7 @@ first section and tucks away at the RSVP.
 
 ## Music
 
-`assets/audio/running-home-to-you.mp3` plays from the moment the guest taps the
+`private/running-home-to-you.mp3` plays from the moment the guest taps the
 seal (browsers only allow sound after a tap). It fades in to 40% volume over
 3 seconds, fades out over the last 4 seconds of the track and fades back in as
 it loops, for as long as the page is open. It fades out when the tab is hidden
@@ -81,28 +109,30 @@ and back in on return. The heart button at the top right beats with the music
 it; a speaker badge and a brief "Tap to mute" label say what it does, and the
 guest's choice is remembered.
 
-To change the track, replace the file (or edit `SRC` in `assets/js/invite.js`).
-Levels and fade lengths are `LEVEL`, `FADE_IN` and `FADE_OUT` in the same place.
+To change the track, replace that file (the name is set in `api/song.js`).
+Levels and fade lengths are `LEVEL`, `FADE_IN` and `FADE_OUT` in `assets/js/invite.js`.
 The current file is 6.7 MB at 320 kbps; re-encoding it to 128 kbps would bring
 it to about 2.7 MB with no audible loss through phone speakers.
 
 ## Editing it
 
-### The guest list: `assets/js/guests.js`
+### The guest list: `private/guests.json`
 
 One entry per guest:
 
-```js
+```json
 {
-  names: ['Ada', 'Ada Obi'],     // every spelling that should let them in
-  salutation: 'Ada',             // written as "Dear Ada,"
-  message: 'Their personal note…' // optional; falls back to the default note
+  "names": ["Ada", "Ada Obi"],
+  "salutation": "Ada",
+  "message": "Their personal note…"
 }
 ```
 
-Matching ignores case, extra spaces, accents and punctuation. A guest who is not
-on the list gets two tries, then an **Open it anyway** link. The name is stored
-in `localStorage`; **Not [name]? Start again** at the foot of the card clears it.
+`names` are every spelling that should let them in; `salutation` is written as
+"Dear Ada,"; `message` is optional and falls back to the default note in
+`index.html`. Matching ignores case, extra spaces, accents and punctuation. A
+guest who is not on the list gets two tries, then an **Open it anyway** link.
+The name is remembered in `localStorage`; **Not [name]? Start again** clears it.
 
 ### The couple photos: `index.html`, section "1 · The two of us (hero)"
 
@@ -168,7 +198,7 @@ If the font cannot load, the text stays live and is wiped in with CSS instead.
 | Couple photos | `index.html` | Placeholders from Figma until the final photos arrive. |
 | Vow exchange venue | `index.html`, `invite.js` | The printed card gives 11 AM and the reception venue, but not where the vows take place. The calendar file uses the reception venue for now. |
 | "Specially invite you" | `index.html` | The print says "Specially invites"; with two sets of parents the verb is plural. |
-| Guest list | `assets/js/guests.js` | Five sample entries. |
+| Guest list | `private/guests.json` | Five sample entries. |
 
 Unused files from the previous build can be deleted: `event-white.webp`,
 `floral-archway.webp`, `floral-overlay.webp`, `flourish-*.png`,

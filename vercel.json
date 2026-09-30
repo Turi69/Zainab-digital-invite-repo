@@ -1,0 +1,16 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "functions": {
+    "api/*.js": { "includeFiles": "private/**" }
+  },
+  "redirects": [
+    { "source": "/private/:path*", "destination": "/", "permanent": false },
+    { "source": "/api/_lib.js", "destination": "/", "permanent": false }
+  ],
+  "headers": [
+    {
+      "source": "/assets/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+    }
+  ]
+}
