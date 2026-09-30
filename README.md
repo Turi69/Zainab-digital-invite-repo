@@ -1,10 +1,10 @@
 # Zainab & Mmedaraobong: digital wedding invitation
 
-A static, single-page invitation. Three acts:
+A static, single-page invitation. Two acts:
 
-1. **Name gate.** The guest types their name and the invitation is personalised.
-2. **Envelope.** Tap the wax seal, the flap opens, the card rises out.
-3. **The card.** One continuous card whose sections borrow the three printed
+1. **Envelope.** Addressed "To Friends & Family" (or to one guest, from a
+   personal link). Tap the envelope, the seal breaks, the flap opens, the card rises out.
+2. **The card.** One continuous card whose sections borrow the three printed
    variations in Figma (`Sync-Sales`, section `119523-19`): parchment with
    burgundy florals, burgundy velvet with white roses and gold, and ivory.
    A single gold frame runs the full length.
@@ -17,8 +17,8 @@ node dev-server.js
 
 Then open <http://localhost:4173>. This small server behaves like the Vercel
 deployment: static files, the guest function in `api/`, and nothing served from
-`private/`. (A plain static server will show the page, but the gate needs the
-function.)
+`private/`. (A plain static server will show the page, but personal links need
+the function.)
 
 ## Deploy it
 
@@ -34,14 +34,16 @@ When you change a CSS or JS file, bump the `?v=` number on its link in
 
 ## What stays private
 
-- **The guest list** lives in `private/guests.json`, on the server only. The
-  gate sends the typed name to `api/guest` and gets back that one guest's
-  salutation and note. The list itself never reaches the browser.
+- **The guest list** lives in `private/guests.json`, on the server only. A
+  personal link (`?to=Carly`) sends that one name to `api/guest` and gets back
+  that guest's salutation and note. The list itself never reaches the browser.
 - **The song** is an ordinary file in `assets/audio/` and can be downloaded.
 - **RSVP replies** are remembered only on the guest's own device
   (`localStorage` key `zm-invite-rsvp`), so the RSVP section can show their answer. A tap
-  counts as the answer: WhatsApp cannot tell us whether the message was sent, so
-  the card offers "Send my reply again". Replies themselves arrive in WhatsApp.
+  counts as the answer: the page cannot tell whether the text was sent, so the
+  card offers "Send my reply again". Replies arrive as text messages to
+  0810 362 9516. The guest's name for the reply is kept on their device too
+  (`zm-invite-name`).
 - **Plan your journey** builds a prompt and opens `chatgpt.com/?hints=search&q=…`
   in a new tab. The starting town (or, only if the guest taps "Use my location",
   coordinates rounded to about 1 km) goes into that prompt and nowhere else.
@@ -52,11 +54,6 @@ When you change a CSS or JS file, bump the `?v=` number on its link in
 
 ## The arrival
 
-- **Gate.** Petals and gold dust drift over the velvet behind the card. The card
-  tilts up into place, the fleurons open from the centre, "The wedding of"
-  tracks in and the couple's names write themselves in bronze. A golden light
-  slides across the paper. When a name is accepted the card lifts and
-  dissolves in a spray of sparks.
 - **Envelope.** Real paper: each flap is its own sheet casting a soft shadow
   on the one below, lit from the top left, with faint handling creases
   (`assets/img/paper-crumple.webp`, a lit height map soft-light blended over
@@ -78,13 +75,14 @@ When you change a CSS or JS file, bump the `?v=` number on its link in
 | Section | What happens |
 |---|---|
 | Hero: the two of us | Parchment with burgundy florals growing in from all four corners. The couple photo rises into an arch whose bronze frame draws itself; photos crossfade with a slow push-in. The ZM seal presses down, then the couple's names **write themselves** in bronze foil with a spark on the pen nib. A swash draws underneath, "Two hearts, one love" is written, and the dates and place follow. A gust carries petals across the card. |
-| A note for you | "Dear [name]," is handwritten, the personal note arrives word by word, then the signature is written. |
+| A special message | "Dear Friends & Family," is handwritten, the couple's special message arrives word by word, then the signature is written. From a personal link it is "Dear [name]," and that guest's own note. |
 | Traditional Wedding | Burgundy, from printed card 2. The date rolls up to 19 and the rules extend. Photographic keepsakes settle into the bottom corners one after another: folded aso-oke and a carved calabash on the left, a carved gourd and a coral necklace (which keeps a slow sway) on the right. Cut-outs are `assets/img/trad-*.webp`. |
 | Vow Exchange & Blessings | Ivory, from printed card 3. A pair of gold rings drops in, floats and catches the light. Reception venue and directions. |
 | Countdown | Live days, hours, minutes and seconds to 2 PM WAT on 19 November. |
-| Colours of the day | Silk swatches drop in with a travelling sheen. |
-| RSVP | Handwritten "Will you join us?", a one-line heart drawing, Call and WhatsApp buttons. WhatsApp opens with a message that names the guest. |
-| Closing | "See you in Uyo", written under a shower of petals. |
+| Dress code | "Dress beautifully and elegantly", with white and ivory swatches struck through for the white wedding day. |
+| RSVP | Handwritten "Will you join us?", the call number (calls only) and the SMS number. The guest adds their name; "Yes" asks which celebration, and each reply opens a text message to 0810 362 9516 that leads with the answer. |
+| Gifts | The two bank accounts, each with a one-tap "Copy number". |
+| Closing | "Hope to see you in our beautiful city of Uyo to", then "Meet the Joshuas" written under a shower of petals. |
 
 Throughout: petals, blossoms and leaves blow across the screen on a gusting
 wind at three depths, with gold dust rising through them. The florals printed
@@ -124,12 +122,12 @@ One entry per guest:
 }
 ```
 
-`names` are every spelling that should let them in; `salutation` is written as
-"Dear Ada,"; `message` is optional and falls back to the default note in
-`index.html`. Matching ignores case, extra spaces, accents and punctuation. A
-name that is not on the list does not open the card; after two tries the gate
-points the guest to the couple's number.
-The name is remembered in `localStorage`; **Not [name]? Start again** clears it.
+Send each listed guest their own link: the site address with `?to=` and any one
+of their `names`, for example `https://your-site.vercel.app/?to=Carly`. The
+envelope then reads "To Carly" and the note becomes "Dear Carly," with their
+`message` (without one, the couple's special message). Matching ignores case,
+extra spaces, accents and punctuation. The plain address, or a name not on the
+list, opens the general invitation for Friends & Family.
 
 ### The couple photos: `index.html`, section "1 · The two of us (hero)"
 
@@ -148,8 +146,9 @@ the final photos arrive.
 - Directions: the `href` on each **Directions** button (Google Maps search).
 - Calendar files: `EVENTS` in `assets/js/invite.js` (times are UTC; WAT is UTC+1).
 - Countdown target: `WEDDING` in `assets/js/invite.js`.
-- RSVP number: the `tel:` link in the RSVP section of `index.html`, and
-  `RSVP_NUMBER` in `assets/js/invite.js` for the WhatsApp replies.
+- RSVP numbers: the `tel:` (calls only) and `sms:` links in the RSVP section of
+  `index.html`, and `RSVP_SMS` in `assets/js/invite.js` for the text replies.
+- Bank details: the Gifts section of `index.html`.
 - RSVP wording, celebrations and the journey prompt: `CELEBRATIONS`, `setRsvp`
   and `journeyPrompt` in `assets/js/invite.js`.
 
@@ -195,15 +194,15 @@ them through. With Reduce Motion on, lines appear at once and nothing is held.
   `aria-hidden`.
 - `prefers-reduced-motion: reduce` removes the wind, the writing, the reveals
   and every loop. The card appears complete and still.
-- The gate is a focus-trapped dialog; errors are announced. The envelope opens
-  with Enter or Space. Touch targets are at least 44px.
+- The envelope opens with a tap, Enter or Space. Touch targets are at least 44px.
 - The ambient layer pauses when the tab is hidden.
 
 ## Still to confirm
 
 | Item | Where | Note |
 |---|---|---|
-| Couple photos | `index.html` | Placeholders from Figma until the final photos arrive. |
+| Couple photos | `index.html` | Placeholders until the couple send a personal photo; if none suits, the photo comes off. |
+| Music | `assets/audio/` | The couple are choosing a track; replace the file (or `SRC` in `invite.js`). |
 | Vow exchange venue | `index.html`, `invite.js` | The printed card gives 11 AM and the reception venue, but not where the vows take place. The calendar file uses the reception venue for now. |
 | "Specially invite you" | `index.html` | The print says "Specially invites"; with two sets of parents the verb is plural. |
 | Guest list | `private/guests.json` | Five sample entries. |

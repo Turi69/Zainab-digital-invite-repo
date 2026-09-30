@@ -19,11 +19,11 @@
 <link rel="preload" as="fetch" href="assets/fonts/GreatVibes-sub.ttf" type="font/ttf" crossorigin />
 <link rel="preload" as="image" href="assets/img/paper-bg.webp" />
 <link rel="preload" as="image" href="assets/img/hero-couple.webp" />
-<link rel="stylesheet" href="assets/css/invite.css?v=72" />
+<link rel="stylesheet" href="assets/css/invite.css?v=77" />
 </head>
 <body class="is-sealed">
 
-<!-- Velvet backdrop for the gate and envelope; the petal layer drifts over it. -->
+<!-- Velvet backdrop for the envelope; the petal layer drifts over it. -->
 <div class="backdrop" aria-hidden="true"></div>
 <canvas class="ambient" id="ambient" aria-hidden="true"></canvas>
 <div class="flash" id="flash" aria-hidden="true"></div>
@@ -47,36 +47,6 @@
 </svg>
 
 
-<!-- ─────────────────────────────────────────────────────────────
-     1. The name gate
-     ───────────────────────────────────────────────────────────── -->
-<div class="gate" id="gate" role="dialog" aria-modal="true" aria-labelledby="gate-title" hidden>
-  <div class="gate__card" id="gateCard">
-    <span class="gate__light" aria-hidden="true"></span>
-    <img class="gate__fleuron" src="assets/img/fleuron-top.png" alt="" width="83" height="32" />
-
-    <p class="gate__eyebrow">The wedding of</p>
-    <h1 class="gate__title" id="gate-title">
-      <span class="hw hw--gate" data-hw data-ink="bronze">Zainab</span>
-      <span class="hw hw--gate-amp" data-hw data-ink="bronze">&amp;</span>
-      <span class="hw hw--gate" data-hw data-ink="bronze">Mmedaraobong</span>
-    </h1>
-    <p class="gate__prompt">Your invitation is sealed. Tell us your name and we will open it.</p>
-
-    <form class="gate__form" id="gateForm" novalidate>
-      <label class="u-visually-hidden" for="gateInput">Your name</label>
-      <input
-        class="gate__input" id="gateInput" name="guest" type="text"
-        autocomplete="name" autocapitalize="words" spellcheck="false"
-        enterkeyhint="go" placeholder="Your name" aria-describedby="gate-error" />
-      <button class="gate__submit" type="submit">Find my invitation</button>
-    </form>
-
-    <p class="gate__error" id="gate-error" role="alert"></p>
-
-    <img class="gate__fleuron gate__fleuron--btm" src="assets/img/fleuron-bottom.png" alt="" width="83" height="32" />
-  </div>
-</div>
 
 
 <!-- ─────────────────────────────────────────────────────────────
@@ -121,7 +91,7 @@
       </button>
     </div>
 
-    <p class="stage__hint" id="stageHint"><span>Tap the seal to open</span></p>
+    <p class="stage__hint" id="stageHint"><span>Tap the envelope to open</span></p>
   </div>
 </div>
 
@@ -196,24 +166,32 @@
           <span class="hero__place">Uyo, Akwa Ibom</span>
         </p>
 
-        <span class="fleuron fleuron--btm" data-in data-after-names style="--i:4" aria-hidden="true"></span>
+        <figure class="verse" data-in data-after-names style="--i:4">
+          <blockquote class="verse__text">
+            <p>“Therefore whoever hears these sayings of Mine, and does them, I will liken him to a wise man who built his house on the rock: and the rain descended, the floods came, and the winds blew and beat on that house; and it did not fall, for it was founded on the rock.”</p>
+          </blockquote>
+          <figcaption class="verse__ref">Matthew 7:24–25 <span>NKJV</span></figcaption>
+        </figure>
+
+        <span class="fleuron fleuron--btm" data-in data-after-names style="--i:5" aria-hidden="true"></span>
       </div>
 
-      <p class="cue" data-in data-after-names style="--i:5" aria-hidden="true"><span>Scroll</span><svg><use href="#ic-arrow"/></svg></p>
+      <p class="cue" data-in data-after-names style="--i:6" aria-hidden="true"><span>Scroll</span><svg><use href="#ic-arrow"/></svg></p>
     </section>
 
 
-    <!-- 3 · A note for you ...................................... -->
+    <!-- 3 · A special message ................................... -->
     <section class="piece piece--note" aria-labelledby="note-title" data-piece>
       <img class="watermark" src="assets/img/monogram.webp" alt="" width="741" height="760" loading="lazy" aria-hidden="true" />
       <div class="piece__body">
+        <p class="event__kicker" data-in style="--i:0">A special message</p>
         <h2 class="note__salutation" id="note-title">
-          <span class="hw hw--salutation" data-hw data-ink="ink" id="guestSalutation">Dear friend,</span>
+          <span class="hw hw--salutation" data-hw data-ink="ink" id="guestSalutation">Dear Friends &amp; Family,</span>
         </h2>
-        <p class="note__body" id="guestMessage" data-words>
-          We are so glad you are part of this. Come and stand with us in Uyo this November,
-          eat well, dance badly, and help us start the rest of it properly.
-        </p>
+        <div class="note__body" id="guestMessage" data-words>
+          <p>As we get ready to say I do and begin the next chapter of our lives, it would be an honour and a pleasure to have you celebrate this special day and time with us.</p>
+          <p>We feel blessed to have you in our lives, and this day would not be as special without your love, support and prayers.</p>
+        </div>
         <p class="note__signoff" data-in data-after-words style="--i:0">With love,</p>
         <p class="note__signature">
           <span class="hw hw--signature" data-hw data-ink="ink" data-after-words>Zainab &amp; Mmedaraobong</span>
@@ -333,25 +311,22 @@
     </section>
 
 
-    <!-- 7 · Colours of the day .................................. -->
-    <section class="piece piece--parchment piece--colours" aria-labelledby="colours-title" data-piece>
+    <!-- 7 · Dress code ............................................ -->
+    <section class="piece piece--parchment piece--colours piece--dress" aria-labelledby="dress-title" data-piece>
       <div class="piece__body">
-        <h2 class="event__title event__title--plain" id="colours-title" data-in style="--i:0">
+        <h2 class="event__title event__title--plain" id="dress-title" data-in style="--i:0">
           <span class="rule rule--l" aria-hidden="true"></span>
-          <span class="event__title-text">Colours of the day</span>
+          <span class="event__title-text">Dress code</span>
           <span class="rule rule--r" aria-hidden="true"></span>
         </h2>
+        <p class="dress__lead" data-in style="--i:1">We’d love for our guests to dress beautifully and elegantly.</p>
 
-        <ul class="swatches">
-          <li class="swatch" data-in style="--i:1; --swatch:#800020"><span class="swatch__silk" aria-hidden="true"></span><span class="swatch__name">Burgundy</span></li>
-          <li class="swatch" data-in style="--i:2; --swatch:#D8B46A"><span class="swatch__silk" aria-hidden="true"></span><span class="swatch__name">Champagne gold</span></li>
-          <li class="swatch" data-in style="--i:3; --swatch:#FFFFF0"><span class="swatch__silk" aria-hidden="true"></span><span class="swatch__name">Ivory</span></li>
-        </ul>
-        <p class="colours__note" data-in style="--i:4">Wear any of the three, or all of them at once.</p>
-        <div class="actions" data-in style="--i:5">
-          <a class="btn btn--text" href="https://www.pinterest.com/search/pins/?q=burgundy%2C%20Champagne%20gold%20and%20ivory%20Nigerian%20traditional%20dress%20male%20and%20female&amp;rs=typed" target="_blank" rel="noopener">
-            <svg aria-hidden="true"><use href="#ic-spark"/></svg><span>Outfit inspiration</span>
-          </a>
+        <div class="dress__avoid" data-in style="--i:2">
+          <ul class="swatches swatches--avoid" aria-hidden="true">
+            <li class="swatch swatch--avoid" style="--swatch:#FFFFFF"><span class="swatch__silk"></span><span class="swatch__name">White</span></li>
+            <li class="swatch swatch--avoid" style="--swatch:#F4EFDC"><span class="swatch__silk"></span><span class="swatch__name">Ivory</span></li>
+          </ul>
+          <p class="dress__note">We also kindly ask guests to avoid wearing white or ivory on the white wedding day.</p>
         </div>
       </div>
     </section>
@@ -368,16 +343,32 @@
           <path pathLength="1" d="M4 46c18 0 40 0 56-2-14-10-26-18-24-28 2-8 14-10 20-4 2 2 4 5 4 8 0-3 2-6 4-8 6-6 18-4 20 4 2 10-10 18-24 28 16 2 38 2 56 2" />
         </svg>
         <p class="rsvp__lead" data-in style="--i:2">Tell us if you can make it, so we can save you a seat and a plate with your name on it.</p>
-        <p class="rsvp__number" data-in style="--i:3"><a href="tel:+2347031299072">0703 129 9072</a></p>
+        <div class="rsvp__contacts" data-in style="--i:3">
+          <p class="rsvp__contact">
+            <span class="rsvp__how">Calls only</span>
+            <a class="rsvp__number" href="tel:+2347031299072">0703 129 9072</a>
+          </p>
+          <p class="rsvp__contact">
+            <span class="rsvp__how">RSVP by SMS</span>
+            <a class="rsvp__number" href="sms:+2348103629516">0810 362 9516</a>
+          </p>
+        </div>
 
-        <div class="actions actions--rsvp" data-in style="--i:4">
-          <a class="btn btn--gold" id="rsvpYes" href="https://wa.me/2347031299072" target="_blank" rel="noopener">
+        <div class="rsvp__field" data-in style="--i:4">
+          <label class="rsvp__label" for="rsvpName">Your name</label>
+          <input class="rsvp__input" id="rsvpName" type="text" autocomplete="name" autocapitalize="words" enterkeyhint="done" placeholder="So they know the reply is from you" />
+          <p class="rsvp__hint" id="rsvpHint" role="status" aria-live="polite"></p>
+        </div>
+
+        <div class="actions actions--rsvp" data-in style="--i:5">
+          <a class="btn btn--gold" id="rsvpYes" href="sms:+2348103629516">
             <svg aria-hidden="true"><use href="#ic-heart"/></svg><span data-rsvp-label>Yes, I’ll be there</span>
           </a>
-          <a class="btn btn--ghost" id="rsvpNo" href="https://wa.me/2347031299072" target="_blank" rel="noopener">
+          <a class="btn btn--ghost" id="rsvpNo" href="sms:+2348103629516">
             <span data-rsvp-label>Sadly, I can’t make it</span>
           </a>
         </div>
+        <p class="rsvp__via" data-in style="--i:6">Your reply opens as a text message to <span class="u-nowrap">0810 362 9516</span>, ready to send.</p>
 
         <!-- Shown once the guest has replied (remembered on their device). -->
         <div class="reply" id="rsvpReplied" hidden>
@@ -397,7 +388,7 @@
             </div>
           </div>
           <p class="reply__links">
-            <a class="reply__link" data-reply-resend href="https://wa.me/2347031299072" target="_blank" rel="noopener">Send my reply again</a>
+            <a class="reply__link" data-reply-resend href="sms:+2348103629516">Send my reply again</a>
             <span aria-hidden="true">·</span>
             <button class="reply__link" type="button" data-reply-change>Change my reply</button>
           </p>
@@ -405,7 +396,40 @@
       </div>
     </section>
 
-    <!-- 9 · Closing ............................................. -->
+    <!-- 9 · Gifts ............................................... -->
+    <section class="piece piece--ivory piece--gift" aria-labelledby="gift-title" data-piece>
+      <div class="piece__body">
+        <p class="event__kicker" data-in style="--i:0">Gifts</p>
+        <h2 class="gift__title" id="gift-title">
+          <span class="hw hw--title" data-hw data-ink="bronze">With gratitude</span>
+        </h2>
+        <p class="gift__lead" data-in style="--i:1">Your presence is the greatest gift to us. However, if you wish to gift us something, please find our account details below.</p>
+
+        <div class="accounts">
+          <div class="account" data-in style="--i:2">
+            <p class="account__bank">First Bank</p>
+            <p class="account__number">3053887240</p>
+            <p class="account__name">Zainab Ali</p>
+            <button class="account__copy" type="button" data-copy="3053887240" data-copy-label="Zainab Ali’s First Bank account number">
+              <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M8 3h9a2 2 0 0 1 2 2v11h-2V5H8V3Zm-3 4h9a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2Zm0 2v10h9V9H5Z"/></svg>
+              <span>Copy number</span>
+            </button>
+          </div>
+          <div class="account" data-in style="--i:3">
+            <p class="account__bank">GTBank</p>
+            <p class="account__number">0137184977</p>
+            <p class="account__name">Joshua Mmedaraobong</p>
+            <button class="account__copy" type="button" data-copy="0137184977" data-copy-label="Joshua Mmedaraobong’s GTBank account number">
+              <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M8 3h9a2 2 0 0 1 2 2v11h-2V5H8V3Zm-3 4h9a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2Zm0 2v10h9V9H5Z"/></svg>
+              <span>Copy number</span>
+            </button>
+          </div>
+        </div>
+        <p class="gift__status" id="giftStatus" role="status" aria-live="polite"></p>
+      </div>
+    </section>
+
+    <!-- 10 · Closing ............................................ -->
     <section class="piece piece--parchment finale" aria-labelledby="finale-title" data-piece>
       <div class="piece__florals" aria-hidden="true">
         <img class="bloom bloom--bl" data-bend="1" src="assets/img/floral-bl.webp" alt="" width="720" height="679" loading="lazy" />
@@ -413,11 +437,11 @@
       </div>
       <div class="piece__body">
         <span class="fleuron fleuron--top fleuron--sm" data-in style="--i:0" aria-hidden="true"></span>
+        <p class="finale__lead" data-in style="--i:0">Hope to see you in our beautiful city of Uyo to</p>
         <h2 class="finale__title" id="finale-title">
-          <span class="hw hw--finale" data-hw data-ink="bronze">See you in Uyo</span>
+          <span class="hw hw--finale" data-hw data-ink="bronze">Meet the Joshuas</span>
         </h2>
         <p class="finale__names" data-in data-after-hw style="--i:0">Zainab &amp; Mmedaraobong &middot; 2026</p>
-        <button class="finale__reset" id="resetGuest" type="button" data-in data-after-hw style="--i:1">Not <span id="resetName">you</span>? Start again</button>
       </div>
     </section>
 
@@ -462,15 +486,15 @@
       <p class="attend__lead">Choose a celebration and we will save your seat.</p>
 
       <div class="attend__options">
-        <a class="attend__option" data-attend="trad" href="https://wa.me/2347031299072" target="_blank" rel="noopener">
+        <a class="attend__option" data-attend="trad" href="sms:+2348103629516">
           <span class="attend__name">Traditional Wedding</span>
           <span class="attend__when">Thursday 19 November · 2 PM</span>
         </a>
-        <a class="attend__option" data-attend="vows" href="https://wa.me/2347031299072" target="_blank" rel="noopener">
+        <a class="attend__option" data-attend="vows" href="sms:+2348103629516">
           <span class="attend__name">Vow Exchange &amp; Blessings</span>
           <span class="attend__when">Saturday 21 November · 11 AM</span>
         </a>
-        <a class="attend__option attend__option--both" data-attend="both" href="https://wa.me/2347031299072" target="_blank" rel="noopener">
+        <a class="attend__option attend__option--both" data-attend="both" href="sms:+2348103629516">
           <span class="attend__name"><svg aria-hidden="true"><use href="#ic-heart"/></svg>Both celebrations</span>
           <span class="attend__when">Thursday 19 &amp; Saturday 21 November</span>
         </a>
@@ -529,7 +553,7 @@
 </dialog>
 
 <script src="assets/js/vendor/opentype.min.js"></script>
-<script src="assets/js/handwriting.js?v=72"></script>
-<script src="assets/js/invite.js?v=72"></script>
+<script src="assets/js/handwriting.js?v=77"></script>
+<script src="assets/js/invite.js?v=77"></script>
 </body>
 </html>

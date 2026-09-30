@@ -1,20 +1,15 @@
 /* ============================================================================
    Zainab & Mmedaraobong: invitation behaviour
-   Three acts: name gate -> envelope -> invitation.
+   Two acts: the envelope, then the invitation. A personal link
+   (?to=Carly) addresses the envelope and the note to that guest.
    ========================================================================== */
 
 (function () {
   'use strict';
 
-  var STORAGE_KEY = 'zm-invite-guest';
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
   var el = {
-    gate:         document.getElementById('gate'),
-    gateCard:     document.getElementById('gateCard'),
-    gateForm:     document.getElementById('gateForm'),
-    gateInput:    document.getElementById('gateInput'),
-    gateError:    document.getElementById('gate-error'),
     stage:        document.getElementById('stage'),
     envelope:     document.getElementById('envelope'),
     envelopeOpen: document.getElementById('envelopeOpen'),
@@ -22,8 +17,8 @@
     invite:       document.getElementById('invite'),
     salutation:   document.getElementById('guestSalutation'),
     guestMessage: document.getElementById('guestMessage'),
-    resetName:    document.getElementById('resetName'),
-    resetGuest:   document.getElementById('resetGuest'),
+    rsvpName:     document.getElementById('rsvpName'),
+    rsvpHint:     document.getElementById('rsvpHint'),
     rsvpYes:      document.getElementById('rsvpYes'),
     rsvpNo:       document.getElementById('rsvpNo'),
     attend:       document.getElementById('attendDialog'),
@@ -36,8 +31,8 @@
   }
 
   /* ── Guest lookup ─────────────────────────────────────────────────────
-     The list lives on the server (/api/guest). The page only ever learns the
-     salutation and note of the name that was typed.                       */
+     The list lives on the server (/api/guest). A personal link asks for one
+     name, and the page only ever learns that guest's salutation and note. */
 
   function askGate(name, anyway) {
     var request = fetch('api/guest', {
@@ -55,25 +50,39 @@
     return Promise.race([request, timeout]);
   }
 
-  var defaultMessage = el.guestMessage ? el.guestMessage.textContent.replace(/\s+/g, ' ').trim() : '';
+  // The couple's special message, shown to everyone without a note of their own.
+  var defaultMessage = el.guestMessage ? el.guestMessage.innerHTML : '';
 
   function applyGuest(entry) {
-    var salutation = (entry && entry.salutation) || 'friend';
+    var salutation = (entry && entry.salutation) || 'Friends & Family';
     if (el.salutation) window.Handwriting.setText(el.salutation, 'Dear ' + salutation + ',');
-    if (el.resetName)    el.resetName.textContent = salutation;
     if (el.envelopeName) window.Handwriting.setText(el.envelopeName, 'To ' + salutation);
-    if (el.guestMessage) el.guestMessage.textContent = (entry && entry.message) || defaultMessage;
-    setRsvp(entry ? salutation : '');
+    if (el.guestMessage) {
+      if (entry && entry.message) {
+        el.guestMessage.textContent = '';
+        var para = document.createElement('p');
+        para.textContent = entry.message;
+        el.guestMessage.appendChild(para);
+      } else {
+        el.guestMessage.innerHTML = defaultMessage;
+      }
+    }
+    guestLink = entry ? salutation : '';
+    if (el.rsvpName && entry && !el.rsvpName.value) el.rsvpName.value = salutation;
+    setRsvp();
     document.title = entry ? salutation + ', you are invited' : 'Zainab & Mmedaraobong: you are invited';
   }
 
-  // The RSVP replies open WhatsApp with a message already written. A couple
-  // or a family ("Mummy and Daddy", "The Alis") answers as "we". The answer
-  // heads the message in bold (WhatsApp's *asterisks*), so the couple can
-  // read every reply at a glance in their chat list.
-  var RSVP_NUMBER = '2347031299072';
+  // The RSVP replies open a text message to the couple's SMS number with the
+  // reply already written; calls go to the other number. The answer leads
+  // the message ("RSVP: Yes, I'll be there"), so every reply reads at a
+  // glance. A couple or a family ("Mummy and Daddy", "The Alis") answers
+  // as "we".
+  var RSVP_SMS = '+2348103629516';
   var RSVP_KEY = 'zm-invite-rsvp';
   var FROM_KEY = 'zm-invite-from';
+  var NAME_KEY = 'zm-invite-name';
+  var guestLink = '';        // the guest a personal link was made for, if any
   var CELEBRATIONS = {
     trad: { title: 'Traditional Wedding, Thursday 19 November',
             line: 'the Traditional Wedding on Thursday 19 November',
@@ -86,11 +95,17 @@
   };
   var guest = { name: '', we: false, yes: '', no: '', links: {} };
 
-  function waLink(lines) {
-    return 'https://wa.me/' + RSVP_NUMBER + '?text=' + encodeURIComponent(lines.join('\n'));
+  // "?&body=" is understood by both iOS and Android messaging apps.
+  function smsLink(lines) {
+    return 'sms:' + RSVP_SMS + '?&body=' + encodeURIComponent(lines.join('\n'));
   }
 
-  function setRsvp(name) {
+  function replyName() {
+    return ((el.rsvpName && el.rsvpName.value) || guestLink || '').replace(/\s+/g, ' ').trim();
+  }
+
+  function setRsvp() {
+    var name = replyName();
     var we = /\s(and|&)\s|^the\s/i.test(name);
     var hi = 'Hello Zainab and Mmedaraobong' + (name ? ', it’s ' + (we ? 'us, ' : '') + name : '') + '.';
     var yes = we ? 'Yes, we’ll be there' : 'Yes, I’ll be there';
@@ -99,9 +114,9 @@
 
     ['trad', 'vows', 'both'].forEach(function (key) {
       var c = CELEBRATIONS[key];
-      links[key] = waLink([
-        '*' + yes + '*',
-        '*' + c.title + '*',
+      links[key] = smsLink([
+        'RSVP: ' + yes,
+        c.title,
         '',
         hi + ' Thank you so much for the beautiful invitation. ' +
           (we ? 'We are delighted to say yes: we will be there for ' + c.line + ', and we cannot wait to celebrate with you both. '
@@ -109,15 +124,15 @@
           'Congratulations 🤍'
       ]);
     });
-    links.no = waLink([
-      '*' + no + '*',
+    links.no = smsLink([
+      'RSVP: ' + no,
       '',
       hi + ' Thank you so much for the beautiful invitation, it truly means a lot. ' +
         (we ? 'Sadly, we will not be able to make it, but we will be with you in spirit and cheering you on from afar. '
             : 'Sadly, I will not be able to make it, but I will be with you in spirit and cheering you on from afar. ') +
         'Wishing you both a lifetime of love and joy 🤍'
     ]);
-    guest = { name: name, we: we, yes: yes, no: no, links: links };
+    guest = { name: guestLink, we: we, yes: yes, no: no, links: links };
 
     if (el.rsvpYes) {
       // Without the chooser (no <dialog> support) the button still sends a yes.
@@ -137,9 +152,10 @@
   }
 
   /* ── The guest's reply, remembered on this device ──────────────────────
-     Tapping a reply is taken as the answer (WhatsApp cannot tell us whether
-     the message was sent), so the card offers to send it again. The reply
-     is kept per guest name, so a shared phone shows each guest their own. */
+     Tapping a reply is taken as the answer (the page cannot tell whether the
+     text was sent), so the card offers to send it again. A reply made from a
+     personal link is kept for that guest, so a shared phone shows each
+     guest their own. */
   function readReply() {
     try {
       var r = JSON.parse(localStorage.getItem(RSVP_KEY) || 'null');
@@ -186,17 +202,44 @@
     }
   }
 
-  // Record the answer as the guest leaves for WhatsApp; the card is waiting
-  // when they come back.
+  // Record the answer as the guest leaves for their messages; the card is
+  // waiting when they come back.
   function recordReply(answer, choice) {
     window.setTimeout(function () { showReply(saveReply(answer, choice), true); }, 350);
   }
 
+  function nameReady() {
+    if (replyName()) { if (el.rsvpHint) el.rsvpHint.textContent = ''; return true; }
+    if (el.rsvpHint) el.rsvpHint.textContent = 'Add your name first, so Zainab and Mmedaraobong know who is replying.';
+    if (el.rsvpName) {
+      el.rsvpName.focus();
+      el.rsvpName.classList.remove('is-asking');
+      void el.rsvpName.offsetWidth;
+      el.rsvpName.classList.add('is-asking');
+    }
+    return false;
+  }
+
   function replyControls() {
-    if (el.rsvpNo) el.rsvpNo.addEventListener('click', function () { recordReply('no'); });
-    if (el.rsvpYes) el.rsvpYes.addEventListener('click', function () {
+    if (el.rsvpName) {
+      try { if (!el.rsvpName.value) el.rsvpName.value = localStorage.getItem(NAME_KEY) || ''; } catch (err) { /* ignore */ }
+      el.rsvpName.addEventListener('input', function () {
+        try { localStorage.setItem(NAME_KEY, el.rsvpName.value.trim()); } catch (err) { /* ignore */ }
+        if (el.rsvpHint && replyName()) el.rsvpHint.textContent = '';
+        setRsvp();
+      });
+      setRsvp();
+    }
+    if (el.rsvpNo) el.rsvpNo.addEventListener('click', function (event) {
+      if (!nameReady()) { event.preventDefault(); return; }
+      recordReply('no');
+    });
+    if (el.rsvpYes) el.rsvpYes.addEventListener('click', function (event) {
       // Only when the chooser is unavailable does this link go straight out.
-      if (!el.attend || typeof el.attend.showModal !== 'function') recordReply('yes', 'both');
+      if (!el.attend || typeof el.attend.showModal !== 'function') {
+        if (!nameReady()) { event.preventDefault(); return; }
+        recordReply('yes', 'both');
+      }
     });
     if (el.attend) Array.prototype.forEach.call(el.attend.querySelectorAll('[data-attend]'), function (a) {
       a.addEventListener('click', function () { recordReply('yes', a.getAttribute('data-attend')); });
@@ -258,13 +301,16 @@
 
   /* ── Which celebration? ─────────────────────────────────────────────────
      "Yes" asks which celebration the guest will come to. Each choice opens
-     WhatsApp with that choice written into the reply. */
+     a text message with that choice written into the reply. */
   function attendChooser() {
     var dialog = el.attend;
     if (!el.rsvpYes || !dialog || typeof dialog.showModal !== 'function') return;
     var card = sheet(dialog);
-    el.rsvpYes.addEventListener('click', function (event) { event.preventDefault(); card.open(); });
-    // The link opens WhatsApp in a new tab; tidy the card away behind it.
+    el.rsvpYes.addEventListener('click', function (event) {
+      event.preventDefault();
+      if (nameReady()) card.open();
+    });
+    // The link opens the messages app; tidy the card away behind it.
     Array.prototype.forEach.call(dialog.querySelectorAll('[data-attend]'), function (a) {
       a.addEventListener('click', function () { window.setTimeout(card.close, 250); });
     });
@@ -303,6 +349,40 @@
       '7. Finish with a short "Best budget plan": in 3 or 4 lines, the cheapest sensible way to do the whole trip (route, where to stay, total estimated cost in naira and my local currency), without cutting corners on safety.',
       'Keep it clear and easy to follow on a phone.'
     ].join('\n');
+  }
+
+  /* ── Gifts: copy an account number in one tap ─────────────────────────── */
+  function giftCopy() {
+    var status = document.getElementById('giftStatus');
+    Array.prototype.forEach.call(document.querySelectorAll('[data-copy]'), function (btn) {
+      var label = btn.querySelector('span');
+      btn.addEventListener('click', function () {
+        var number = btn.getAttribute('data-copy');
+        function done() {
+          btn.classList.add('is-copied');
+          if (label) label.textContent = 'Copied';
+          if (status) status.textContent = 'Copied ' + btn.getAttribute('data-copy-label') + '.';
+          window.clearTimeout(btn.__t);
+          btn.__t = window.setTimeout(function () {
+            btn.classList.remove('is-copied');
+            if (label) label.textContent = 'Copy number';
+          }, 2200);
+        }
+        function fallback() {
+          // Older browsers: select the number so it can be copied by hand.
+          var node = btn.parentElement.querySelector('.account__number');
+          var range = document.createRange();
+          range.selectNodeContents(node);
+          var sel = window.getSelection();
+          sel.removeAllRanges();
+          sel.addRange(range);
+          if (status) status.textContent = 'Number selected. Copy it from the menu.';
+        }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(number).then(done, fallback);
+        } else fallback();
+      });
+    });
   }
 
   function journeyPlanner() {
@@ -393,126 +473,9 @@
       });
     }
   }
-  setRsvp('');
+  setRsvp();
 
-  function rememberGuest(name) {
-    try {
-      if (name) localStorage.setItem(STORAGE_KEY, name);
-    } catch (err) { /* private browsing: personalisation is per-session only */ }
-  }
-
-  /* ── Act one: the gate ────────────────────────────────────────────────── */
-
-  var attempts = 0;
-
-  function showGate() {
-    el.gate.hidden = false;
-    requestAnimationFrame(function () {
-      el.gate.classList.add('is-visible');
-      var names = Array.prototype.slice.call(el.gate.querySelectorAll('[data-hw]'));
-      wait(1000).then(function () { return writeLines(names); });
-      // Focus once the form has arrived, so the caret does not blink over an empty card.
-      window.setTimeout(function () { el.gateInput.focus({ preventScroll: true }); }, reduceMotion.matches ? 0 : 3000);
-    });
-    document.addEventListener('keydown', trapFocus, true);
-  }
-
-  function hideGate() {
-    document.removeEventListener('keydown', trapFocus, true);
-    el.gate.classList.remove('is-visible');
-    el.gate.classList.add('is-leaving');
-    var card = el.gateCard.getBoundingClientRect();
-    burst(el.gateCard, 16, card.left + card.width / 2, card.top + card.height / 2, 0.3);
-    if (ambient) ambient.flurry(10, 'left');
-    window.setTimeout(function () {
-      el.gate.classList.remove('is-leaving');
-      el.gate.hidden = true;
-      showStage();
-    }, reduceMotion.matches ? 0 : 700);
-  }
-
-  // The gate is the only way in, so focus stays inside it.
-  function trapFocus(event) {
-    if (event.key !== 'Tab' || el.gate.hidden) return;
-    var focusable = el.gateCard.querySelectorAll(
-      'input, button:not([hidden]), [href], [tabindex]:not([tabindex="-1"])'
-    );
-    if (!focusable.length) return;
-    var first = focusable[0];
-    var last = focusable[focusable.length - 1];
-    if (event.shiftKey && document.activeElement === first) {
-      event.preventDefault(); last.focus();
-    } else if (!event.shiftKey && document.activeElement === last) {
-      event.preventDefault(); first.focus();
-    }
-  }
-
-  function showError(message) {
-    el.gateError.textContent = message;
-    el.gateError.classList.add('is-shown');
-    el.gateCard.classList.remove('is-shaking');
-    void el.gateCard.offsetWidth;            // restart the animation
-    el.gateCard.classList.add('is-shaking');
-    el.gateInput.select();
-  }
-
-  function clearError() {
-    el.gateError.classList.remove('is-shown');
-    el.gateError.textContent = '';
-  }
-
-  var submit = el.gateForm.querySelector('.gate__submit');
-  var submitLabel = submit ? submit.textContent : '';
-
-  function busy(on) {
-    if (!submit) return;
-    submit.disabled = on;
-    submit.textContent = on ? 'Finding your invitation…' : submitLabel;
-  }
-
-  el.gateForm.addEventListener('submit', function (event) {
-    event.preventDefault();
-    var value = el.gateInput.value;
-
-    if (!value.trim()) {
-      showError('Please add your name so we know which note to show you.');
-      return;
-    }
-
-    busy(true);
-    askGate(value, false).then(function (reply) {
-      busy(false);
-      if (!reply.ok) {
-        attempts += 1;
-        // Only names on the guest list open the card; after two misses,
-        // point the guest to the couple rather than a way round.
-        showError(
-          attempts >= 2
-            ? 'Still no match. Try the name on your save the date, or message the couple on 0703 129 9072.'
-            : 'We cannot find that name. Try the spelling on your save the date.'
-        );
-        return;
-      }
-      clearError();
-      applyGuest(reply);
-      rememberGuest(reply.remember);
-      hideGate();
-    }).catch(function () {
-      busy(false);
-      showError('Could not check the guest list just now. Check your connection and try again.');
-    });
-  });
-
-  el.gateInput.addEventListener('input', function () {
-    if (el.gateError.classList.contains('is-shown')) clearError();
-  });
-
-  el.resetGuest.addEventListener('click', function () {
-    try { localStorage.removeItem(STORAGE_KEY); } catch (err) { /* nothing to clear */ }
-    location.reload();
-  });
-
-  /* ── Act two: the envelope ────────────────────────────────────────────── */
+  /* ── Act one: the envelope ────────────────────────────────────────────── */
 
   function showStage() {
     el.stage.hidden = false;
@@ -569,14 +532,14 @@
   el.envelopeOpen.addEventListener('click', openEnvelope);
 
   document.addEventListener('keydown', function (event) {
-    if (!el.gate.hidden || opened || el.stage.hidden) return;
+    if (opened || el.stage.hidden || document.activeElement === el.rsvpName) return;
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
       openEnvelope();
     }
   });
 
-  /* ── Act three: the invitation ────────────────────────────────────────── */
+  /* ── Act two: the invitation ────────────────────────────────────────── */
 
   var pieces = Array.prototype.slice.call(document.querySelectorAll('[data-piece]'));
   var hero = document.getElementById('piece-invite');
@@ -588,19 +551,29 @@
   }
 
   // Wrap each word so the note can arrive the way it is read.
+  // Paragraph by paragraph, counting on from one to the next, so the words
+  // arrive in one continuous reading order.
   function splitWords(node) {
     if (!node || node.getAttribute('data-split')) return;
-    var words = node.textContent.replace(/\s+/g, ' ').trim().split(' ');
-    node.textContent = '';
-    words.forEach(function (word, i) {
-      var span = document.createElement('span');
-      span.className = 'word';
-      span.style.setProperty('--w', i);
-      span.textContent = word;
-      node.appendChild(span);
-      node.appendChild(document.createTextNode(' '));
+    var paras = node.querySelectorAll('p');
+    var blocks = paras.length ? Array.prototype.slice.call(paras) : [node];
+    var n = 0;
+    blocks.forEach(function (block) {
+      var words = block.textContent.replace(/\s+/g, ' ').trim().split(' ');
+      block.textContent = '';
+      words.forEach(function (word) {
+        var span = document.createElement('span');
+        span.className = 'word';
+        span.style.setProperty('--w', n++);
+        span.textContent = word;
+        block.appendChild(span);
+        block.appendChild(document.createTextNode(' '));
+      });
     });
-    node.setAttribute('data-split', String(words.length));
+    node.setAttribute('data-split', String(n));
+    // A long message arrives a little quicker, so it never takes much over
+    // 2.6 seconds to read in.
+    node.style.setProperty('--wstep', Math.round(Math.min(55, 2600 / Math.max(1, n))) + 'ms');
   }
 
   // Write every line in a piece, one after another, in document order.
@@ -687,7 +660,7 @@
           piece.classList.add('is-reading');
           // The note arrives word by word; hold the scroll on it as it does.
           window.Handwriting.hold.start(words);
-          return wait(count * 55 + 500);
+          return wait(count * Math.min(55, 2600 / Math.max(1, count)) + 500);
         })
         .then(function () {
           window.Handwriting.hold.end(words);
@@ -1645,29 +1618,30 @@
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 
   (function init() {
-    // Fetch the handwriting font now, while the guest reads the gate.
+    // Fetch the handwriting font now, while the envelope arrives.
     window.Handwriting.load().catch(function () {});
-    // Petals drift behind the gate and the envelope from the first second.
+    // Petals drift behind the envelope from the first second.
     startAmbient();
     debugPanel();
     attendChooser();
     replyControls();
     journeyPlanner();
+    giftCopy();
 
-    var stored = null;
-    try { stored = localStorage.getItem(STORAGE_KEY); } catch (err) { /* no storage */ }
+    // Earlier versions asked for a name at a gate and kept it; forget it.
+    try { localStorage.removeItem('zm-invite-guest'); } catch (err) { /* no storage */ }
 
-    if (stored) {
-      // Someone who has opened it before: fetch their note,
-      // then go straight to the envelope.
-      el.gate.hidden = true;
-      askGate(stored, true)
-        .then(function (reply) { applyGuest(reply.ok ? reply : { salutation: stored }); })
-        .catch(function () { applyGuest({ salutation: stored }); })
+    var invited = '';
+    try { invited = (new URLSearchParams(location.search).get('to') || '').trim(); } catch (err) { /* old browser */ }
+
+    if (invited) {
+      askGate(invited, false)
+        .then(function (reply) { applyGuest(reply.ok ? reply : null); })
+        .catch(function () { applyGuest(null); })
         .then(showStage);
     } else {
       applyGuest(null);
-      showGate();
+      showStage();
     }
   })();
 })();
