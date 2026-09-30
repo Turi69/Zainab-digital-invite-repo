@@ -93,7 +93,7 @@ first section and tucks away at the RSVP.
 
 ## Music
 
-`assets/audio/running-home-to-you.mp3` plays from the moment the guest taps the
+`assets/audio/ordinary-wedding-version.mp3` (Alex Warren, "Ordinary", wedding version, chosen by the couple) plays from the moment the guest taps the
 seal (browsers only allow sound after a tap). It fades in to 40% volume over
 3 seconds, fades out over the last 4 seconds of the track and fades back in as
 it loops, for as long as the page is open. It fades out when the tab is hidden
@@ -190,7 +190,6 @@ them through. With Reduce Motion on, lines appear at once and nothing is held.
 
 | Item | Where | Note |
 |---|---|---|
-| Music | `assets/audio/` | The couple are choosing a track; replace the file (or `SRC` in `invite.js`). |
 | Vow exchange venue | `index.html`, `invite.js` | The printed card gives 11 AM and the reception venue, but not where the vows take place. The calendar file uses the reception venue for now. |
 | "Specially invite you" | `index.html` | The print says "Specially invites"; with two sets of parents the verb is plural. |
 | Guest list | `private/guests.json` | Five sample entries. |

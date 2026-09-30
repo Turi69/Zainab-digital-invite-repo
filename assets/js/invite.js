@@ -1424,7 +1424,7 @@
      lasts until the page is closed.                                     */
 
   var music = (function () {
-    var SRC = 'assets/audio/running-home-to-you.mp3';
+    var SRC = 'assets/audio/ordinary-wedding-version.mp3';
     var LEVEL = 0.4, FADE_IN = 3, FADE_OUT = 4;
 
     var button = document.getElementById('soundToggle');
