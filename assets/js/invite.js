@@ -91,7 +91,10 @@
     };
     [[el.rsvpYes, replies.yes], [el.rsvpNo, replies.no]].forEach(function (pair) {
       if (!pair[0]) return;
-      pair[0].href = 'https://wa.me/' + RSVP_NUMBER + '?text=' + encodeURIComponent(pair[1].text);
+      // The button's words head the message in bold (WhatsApp's *asterisks*),
+      // so the couple can see the answer at a glance in their chat list.
+      var message = '*' + pair[1].label + '*\n\n' + pair[1].text;
+      pair[0].href = 'https://wa.me/' + RSVP_NUMBER + '?text=' + encodeURIComponent(message);
       var label = pair[0].querySelector('[data-rsvp-label]');
       if (label) label.textContent = pair[1].label;
     });
