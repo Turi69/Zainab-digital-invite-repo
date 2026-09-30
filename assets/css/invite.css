@@ -407,7 +407,11 @@ a {
   transform-style: preserve-3d;
   transition: transform 900ms var(--ease-in-out);
 }
-.is-opened .envelope__flap { transform: rotateX(178deg); }
+/* The envelope is a 3D scene, where depth, not z-index, decides what is in
+   front. Opened to 178deg the flap still leant towards the viewer and hid
+   the rising letter; it now rests tipped just past flat, away from them,
+   so the letter slides out over its lining. */
+.is-opened .envelope__flap { transform: rotateX(182deg); }
 
 .envelope__flap-face,
 .envelope__flap-back {
