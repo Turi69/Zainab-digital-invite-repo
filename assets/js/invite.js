@@ -300,6 +300,7 @@
       '4. Tell me how to get from the airport or bus park to the venue, and roughly what that costs.',
       '5. Find 3 or 4 good-value hotels close to ' + (events.length > 1 ? 'the venues (ideally one that works for both)' : 'the venue') + ': well reviewed, clean and safe, but kind on the budget. For each give the price per night in naira and my local currency, how far it is from the venue, what guests praise or complain about, and where to book it.',
       '6. Add practical tips: how early to book for mid-November, any visa or travel documents if I am coming from abroad, and road safety and timing for any overland legs.',
+      '7. Finish with a short "Best budget plan": in 3 or 4 lines, the cheapest sensible way to do the whole trip (route, where to stay, total estimated cost in naira and my local currency), without cutting corners on safety.',
       'Keep it clear and easy to follow on a phone.'
     ].join('\n');
   }
