@@ -73,14 +73,19 @@
   // heads the message in bold (WhatsApp's *asterisks*), so the couple can
   // read every reply at a glance in their chat list.
   var RSVP_NUMBER = '2347031299072';
+  var RSVP_KEY = 'zm-invite-rsvp';
+  var FROM_KEY = 'zm-invite-from';
   var CELEBRATIONS = {
     trad: { title: 'Traditional Wedding, Thursday 19 November',
-            line: 'the Traditional Wedding on Thursday 19 November' },
+            line: 'the Traditional Wedding on Thursday 19 November',
+            plan: 'the Traditional Wedding: Thursday 19 November 2026, 2 PM, Helemah Event Centre, 141 Aka Itiam Rd, Uyo' },
     vows: { title: 'Vow Exchange & Blessings, Saturday 21 November',
-            line: 'the Vow Exchange and Blessings on Saturday 21 November' },
+            line: 'the Vow Exchange and Blessings on Saturday 21 November',
+            plan: 'the Vow Exchange and Blessings: Saturday 21 November 2026, 11 AM, with the reception straight after at Duellaz Landmark Event Centre, 37B Line Donald Etiebet Avenue, Ewet Housing Estate, Uyo' },
     both: { title: 'Both celebrations, 19 & 21 November',
             line: 'both the Traditional Wedding on Thursday 19 November and the Vow Exchange and Blessings on Saturday 21 November' }
   };
+  var guest = { name: '', we: false, yes: '', no: '', links: {} };
 
   function waLink(lines) {
     return 'https://wa.me/' + RSVP_NUMBER + '?text=' + encodeURIComponent(lines.join('\n'));
@@ -91,10 +96,11 @@
     var hi = 'Hello Zainab and Mmedaraobong' + (name ? ', it’s ' + (we ? 'us, ' : '') + name : '') + '.';
     var yes = we ? 'Yes, we’ll be there' : 'Yes, I’ll be there';
     var no = we ? 'Sadly, we can’t make it' : 'Sadly, I can’t make it';
+    var links = {};
 
-    function yesLink(key) {
+    ['trad', 'vows', 'both'].forEach(function (key) {
       var c = CELEBRATIONS[key];
-      return waLink([
+      links[key] = waLink([
         '*' + yes + '*',
         '*' + c.title + '*',
         '',
@@ -103,45 +109,117 @@
               : 'I am delighted to say yes: I will be there for ' + c.line + ', and I cannot wait to celebrate with you both. ') +
           'Congratulations 🤍'
       ]);
-    }
+    });
+    links.no = waLink([
+      '*' + no + '*',
+      '',
+      hi + ' Thank you so much for the beautiful invitation, it truly means a lot. ' +
+        (we ? 'Sadly, we will not be able to make it, but we will be with you in spirit and cheering you on from afar. '
+            : 'Sadly, I will not be able to make it, but I will be with you in spirit and cheering you on from afar. ') +
+        'Wishing you both a lifetime of love and joy 🤍'
+    ]);
+    guest = { name: name, we: we, yes: yes, no: no, links: links };
 
     if (el.rsvpYes) {
       // Without the chooser (no <dialog> support) the button still sends a yes.
-      el.rsvpYes.href = yesLink('both');
+      el.rsvpYes.href = links.both;
       el.rsvpYes.querySelector('[data-rsvp-label]').textContent = yes;
     }
     if (el.rsvpNo) {
-      el.rsvpNo.href = waLink([
-        '*' + no + '*',
-        '',
-        hi + ' Thank you so much for the beautiful invitation, it truly means a lot. ' +
-          (we ? 'Sadly, we will not be able to make it, but we will be with you in spirit and cheering you on from afar. '
-              : 'Sadly, I will not be able to make it, but I will be with you in spirit and cheering you on from afar. ') +
-          'Wishing you both a lifetime of love and joy 🤍'
-      ]);
+      el.rsvpNo.href = links.no;
       el.rsvpNo.querySelector('[data-rsvp-label]').textContent = no;
     }
     if (el.attend) {
       Array.prototype.forEach.call(el.attend.querySelectorAll('[data-attend]'), function (a) {
-        a.href = yesLink(a.getAttribute('data-attend'));
+        a.href = links[a.getAttribute('data-attend')];
       });
     }
+    showReply(readReply(), false);
   }
-  setRsvp('');
 
-  /* ── Which celebration? ─────────────────────────────────────────────────
-     "Yes" opens a small card, dressed like the top of the invitation, asking
-     which celebration the guest will come to. Each choice opens WhatsApp
-     with that choice written into the reply. */
-  function attendChooser() {
-    var dialog = el.attend;
-    if (!el.rsvpYes || !dialog || typeof dialog.showModal !== 'function') return;
+  /* ── The guest's reply, remembered on this device ──────────────────────
+     Tapping a reply is taken as the answer (WhatsApp cannot tell us whether
+     the message was sent), so the card offers to send it again. The reply
+     is kept per guest name, so a shared phone shows each guest their own. */
+  function readReply() {
+    try {
+      var r = JSON.parse(localStorage.getItem(RSVP_KEY) || 'null');
+      return r && r.name === guest.name ? r : null;
+    } catch (err) { return null; }
+  }
+
+  function saveReply(answer, choice) {
+    var r = { name: guest.name, answer: answer, choice: choice || null, at: new Date().toISOString() };
+    try { localStorage.setItem(RSVP_KEY, JSON.stringify(r)); } catch (err) { /* private mode */ }
+    return r;
+  }
+
+  function showReply(r, animate) {
+    var section = document.getElementById('rsvp');
+    var box = document.getElementById('rsvpReplied');
+    if (!section || !box) return;
+    section.classList.toggle('is-replied', !!r);
+    box.hidden = !r;
+    box.classList.remove('is-stamped');
+    if (!r) return;
+
+    var yes = r.answer === 'yes';
+    box.classList.toggle('is-yes', yes);
+    box.classList.toggle('is-no', !yes);
+    box.querySelector('[data-reply-answer]').textContent = yes ? guest.yes : guest.no;
+    box.querySelector('[data-reply-detail]').textContent = yes
+      ? CELEBRATIONS[r.choice || 'both'].title
+      : 'Thank you for letting us know';
+    box.querySelector('[data-reply-thanks]').textContent = yes
+      ? (guest.we ? 'Your seats are saved. We cannot wait to celebrate with you.' : 'Your seat is saved. We cannot wait to celebrate with you.')
+      : 'You will be in our hearts on the day, and we will raise a glass to you.';
+    box.querySelector('[data-reply-resend]').href = yes ? guest.links[r.choice || 'both'] : guest.links.no;
+    var plan = box.querySelector('[data-journey-open]');
+    if (plan) plan.parentElement.hidden = !yes;
+
+    if (animate && !reduceMotion.matches) {
+      void box.offsetWidth;
+      box.classList.add('is-stamped');
+      window.setTimeout(function () {
+        burst(box.querySelector('.reply__seal'), 22, undefined, undefined, yes ? 0.45 : 0.2);
+        if (yes && ambient) ambient.flurry(14, 'left');
+      }, 380);
+    }
+  }
+
+  // Record the answer as the guest leaves for WhatsApp; the card is waiting
+  // when they come back.
+  function recordReply(answer, choice) {
+    window.setTimeout(function () { showReply(saveReply(answer, choice), true); }, 350);
+  }
+
+  function replyControls() {
+    if (el.rsvpNo) el.rsvpNo.addEventListener('click', function () { recordReply('no'); });
+    if (el.rsvpYes) el.rsvpYes.addEventListener('click', function () {
+      // Only when the chooser is unavailable does this link go straight out.
+      if (!el.attend || typeof el.attend.showModal !== 'function') recordReply('yes', 'both');
+    });
+    if (el.attend) Array.prototype.forEach.call(el.attend.querySelectorAll('[data-attend]'), function (a) {
+      a.addEventListener('click', function () { recordReply('yes', a.getAttribute('data-attend')); });
+    });
+    var change = document.querySelector('[data-reply-change]');
+    if (change) change.addEventListener('click', function () {
+      try { localStorage.removeItem(RSVP_KEY); } catch (err) { /* ignore */ }
+      showReply(null, false);
+      var title = document.getElementById('rsvp-title');
+      if (title) title.scrollIntoView({ behavior: reduceMotion.matches ? 'auto' : 'smooth', block: 'center' });
+    });
+  }
+
+  /* ── Cards that open over the invitation ───────────────────────────────
+     A native <dialog> for focus and Esc, dressed like the top of the card,
+     with the florals growing in and the title written as it opens. */
+  function sheet(dialog) {
     var card = dialog.querySelector('.attend__card');
-    var title = dialog.querySelector('.hw--attend');
+    var title = dialog.querySelector('.attend__title [data-hw]');
     var closing = false;
 
-    function open(event) {
-      event.preventDefault();
+    function open() {
       if (dialog.open) return;
       closing = false;
       dialog.classList.remove('is-closing');
@@ -172,16 +250,150 @@
       }, reduceMotion.matches ? 0 : 320);
     }
 
-    el.rsvpYes.addEventListener('click', open);
     dialog.addEventListener('cancel', function (event) { event.preventDefault(); close(); });
     dialog.addEventListener('click', function (event) {
       if (event.target === dialog || event.target.closest('[data-attend-close]')) close();
     });
+    return { open: open, close: close };
+  }
+
+  /* ── Which celebration? ─────────────────────────────────────────────────
+     "Yes" asks which celebration the guest will come to. Each choice opens
+     WhatsApp with that choice written into the reply. */
+  function attendChooser() {
+    var dialog = el.attend;
+    if (!el.rsvpYes || !dialog || typeof dialog.showModal !== 'function') return;
+    var card = sheet(dialog);
+    el.rsvpYes.addEventListener('click', function (event) { event.preventDefault(); card.open(); });
     // The link opens WhatsApp in a new tab; tidy the card away behind it.
     Array.prototype.forEach.call(dialog.querySelectorAll('[data-attend]'), function (a) {
-      a.addEventListener('click', function () { window.setTimeout(close, 250); });
+      a.addEventListener('click', function () { window.setTimeout(card.close, 250); });
     });
   }
+
+  /* ── Plan your journey ──────────────────────────────────────────────────
+     For guests coming from outside Uyo: they say where they are setting off
+     from (or share their location, only if they choose to), and ChatGPT
+     opens with a prompt that already knows the dates, the venues, the
+     airport and who is travelling. Nothing here is sent to us. */
+  function journeyPrompt(from) {
+    var r = readReply() || { choice: 'both' };
+    var choice = r.choice || 'both';
+    var events = choice === 'both'
+      ? [CELEBRATIONS.trad.plan, CELEBRATIONS.vows.plan]
+      : [CELEBRATIONS[choice].plan];
+    var arrive = choice === 'vows' ? 'Friday 20 November' : 'Wednesday 18 November';
+    var leave = choice === 'trad' ? 'Friday 20 November' : 'Sunday 22 November';
+
+    return [
+      'I am a guest at a wedding in Uyo, Akwa Ibom State, Nigeria, and I would like help planning my journey there and back.',
+      '',
+      'Travelling from: ' + from,
+      'Travelling as: ' + (guest.we ? 'a couple or family' : 'one person'),
+      'I am attending ' + (events.length > 1 ? 'two celebrations:' : 'one celebration:'),
+      events.map(function (e) { return '- ' + e; }).join('\n'),
+      'I would like to arrive by ' + arrive + ' and head home on or after ' + leave + '.',
+      '',
+      'Please search for current options and:',
+      '1. Start with a short recommended plan: the single best way to travel from where I am.',
+      '2. Compare the 2 or 3 best routes. Consider flights into Victor Attah International Airport, Uyo (QUO), including connections through Lagos, Abuja or Port Harcourt, and road travel by coach or car where it makes sense from my location.',
+      '3. For each route give the typical journey time, a rough price range in my local currency and in naira, the airlines or coach companies that run it, and how often it runs.',
+      '4. Tell me how to get from the airport or bus park to the venue, and roughly what that costs.',
+      '5. Suggest 2 or 3 well-reviewed places to stay near the venue.',
+      '6. Add practical tips: how early to book for mid-November, any visa or travel documents if I am coming from abroad, and road safety and timing for any overland legs.',
+      'Keep it clear and easy to follow on a phone.'
+    ].join('\n');
+  }
+
+  function journeyPlanner() {
+    var dialog = document.getElementById('journeyDialog');
+    var openBtn = document.querySelector('[data-journey-open]');
+    if (!dialog || !openBtn) return;
+    var input = dialog.querySelector('#journeyFrom');
+    var go = dialog.querySelector('[data-journey-go]');
+    var copy = dialog.querySelector('[data-journey-copy]');
+    var locate = dialog.querySelector('[data-journey-locate]');
+    var status = dialog.querySelector('[data-journey-status]');
+    var detail = dialog.querySelector('[data-journey-for]');
+    var card = typeof dialog.showModal === 'function' ? sheet(dialog) : null;
+
+    // The time zone gives a gentle hint for the placeholder, never a guess
+    // that is filled in for them (Nigeria is all one zone, for a start).
+    try {
+      var zone = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+      var city = zone.split('/').pop().replace(/_/g, ' ');
+      if (city && !/^Lagos$/.test(city) && /\//.test(zone)) input.placeholder = 'e.g. ' + city;
+    } catch (err) { /* keep the default placeholder */ }
+    try { input.value = localStorage.getItem(FROM_KEY) || ''; } catch (err) { /* ignore */ }
+
+    function from() { return input.value.replace(/\s+/g, ' ').trim(); }
+
+    function refresh() {
+      var place = from();
+      go.setAttribute('aria-disabled', place ? 'false' : 'true');
+      go.href = place
+        ? 'https://chatgpt.com/?hints=search&q=' + encodeURIComponent(journeyPrompt(place))
+        : '#';
+    }
+
+    function say(text) { status.textContent = text; }
+
+    openBtn.addEventListener('click', function () {
+      var r = readReply();
+      detail.textContent = 'For ' + CELEBRATIONS[(r && r.choice) || 'both'].line;
+      refresh();
+      say('');
+      if (card) card.open(); else dialog.setAttribute('open', '');
+    });
+
+    input.addEventListener('input', function () {
+      try { localStorage.setItem(FROM_KEY, from()); } catch (err) { /* ignore */ }
+      refresh();
+    });
+
+    go.addEventListener('click', function (event) {
+      if (!from()) {
+        event.preventDefault();
+        say('Add the town or city you are travelling from first.');
+        input.focus();
+        return;
+      }
+      if (card) window.setTimeout(card.close, 300);
+    });
+
+    if (copy) copy.addEventListener('click', function () {
+      if (!from()) { say('Add the town or city you are travelling from first.'); input.focus(); return; }
+      var text = journeyPrompt(from());
+      var done = function () { say('Copied. Paste it into any AI assistant.'); };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done, function () { say('Could not copy on this device.'); });
+      } else say('Could not copy on this device.');
+    });
+
+    // Location is asked for only when the guest taps the button. It is
+    // rounded to about a kilometre and goes no further than their prompt.
+    if (locate) {
+      if (!('geolocation' in navigator)) locate.hidden = true;
+      locate.addEventListener('click', function () {
+        say('Finding you…');
+        locate.disabled = true;
+        navigator.geolocation.getCurrentPosition(function (pos) {
+          var lat = pos.coords.latitude.toFixed(2);
+          var lon = pos.coords.longitude.toFixed(2);
+          input.value = 'my current location (' + lat + ', ' + lon + ')';
+          try { localStorage.setItem(FROM_KEY, input.value); } catch (err) { /* ignore */ }
+          locate.disabled = false;
+          say('Location added. You can type a town instead if you prefer.');
+          refresh();
+        }, function () {
+          locate.disabled = false;
+          say('Location is off for this site. Type your town or city instead.');
+          input.focus();
+        }, { enableHighAccuracy: false, timeout: 10000, maximumAge: 30 * 60 * 1000 });
+      });
+    }
+  }
+  setRsvp('');
 
   function rememberGuest(name) {
     try {
@@ -1416,6 +1628,8 @@
     startAmbient();
     debugPanel();
     attendChooser();
+    replyControls();
+    journeyPlanner();
 
     var stored = null;
     try { stored = localStorage.getItem(STORAGE_KEY); } catch (err) { /* no storage */ }

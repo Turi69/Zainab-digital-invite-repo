@@ -38,6 +38,13 @@ When you change a CSS or JS file, bump the `?v=` number on its link in
   gate sends the typed name to `api/guest` and gets back that one guest's
   salutation and note. The list itself never reaches the browser.
 - **The song** is an ordinary file in `assets/audio/` and can be downloaded.
+- **RSVP replies** are remembered only on the guest's own device
+  (`localStorage` key `zm-invite-rsvp`), so the RSVP section can show their answer. A tap
+  counts as the answer: WhatsApp cannot tell us whether the message was sent, so
+  the card offers "Send my reply again". Replies themselves arrive in WhatsApp.
+- **Plan your journey** builds a prompt and opens `chatgpt.com/?hints=search&q=…`
+  in a new tab. The starting town (or, only if the guest taps "Use my location",
+  coordinates rounded to about 1 km) goes into that prompt and nowhere else.
 - `vercel.json` blocks `/private` and `/api/_lib.js` from being fetched directly.
 - **The GitHub repository is public**, so anyone who finds it can read
   `private/guests.json`. Make the repository private if that matters; Vercel deploys from
@@ -139,7 +146,10 @@ the final photos arrive.
 - Directions: the `href` on each **Directions** button (Google Maps search).
 - Calendar files: `EVENTS` in `assets/js/invite.js` (times are UTC; WAT is UTC+1).
 - Countdown target: `WEDDING` in `assets/js/invite.js`.
-- RSVP number: the `tel:` and `wa.me` links in the RSVP section of `index.html`.
+- RSVP number: the `tel:` link in the RSVP section of `index.html`, and
+  `RSVP_NUMBER` in `assets/js/invite.js` for the WhatsApp replies.
+- RSVP wording, celebrations and the journey prompt: `CELEBRATIONS`, `setRsvp`
+  and `journeyPrompt` in `assets/js/invite.js`.
 
 ### Copy
 

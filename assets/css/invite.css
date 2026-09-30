@@ -2426,6 +2426,218 @@ html.is-attending { overflow: hidden; }
   .attend__lead { margin-top: var(--s-2); }
 }
 
+.attend__note {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-2);
+  margin-top: var(--s-4);
+  padding: 10px 14px;
+  border: 1px dashed rgba(169, 103, 58, 0.4);
+  border-radius: 14px;
+  background: rgba(255, 253, 247, 0.82);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  font-style: italic;
+  color: var(--ink-soft);
+  text-align: left;
+}
+.attend__note svg { flex: none; width: 16px; height: 16px; margin-top: 2px; fill: var(--copper); }
+
+/* ---- The guest's reply, once given ---------------------------------------- */
+.piece--rsvp.is-replied .piece__body > .rsvp__lead,
+.piece--rsvp.is-replied .piece__body > .rsvp__number,
+.piece--rsvp.is-replied .piece__body > .actions--rsvp { display: none; }
+.reply[hidden],
+.reply .actions[hidden] { display: none; }
+
+.reply { margin-top: var(--s-10); }
+.reply__card {
+  position: relative;
+  max-width: 24rem;
+  margin: 0 auto;
+  padding: var(--s-12) var(--s-6) var(--s-8);
+  border: 1px solid rgba(251, 230, 123, 0.5);
+  border-radius: 20px;
+  background:
+    radial-gradient(120% 80% at 50% 0%, rgba(255, 240, 200, 0.12), rgba(255, 240, 200, 0) 70%),
+    rgba(255, 255, 240, 0.04);
+  box-shadow: inset 0 0 0 5px rgba(74, 0, 37, 0.35), inset 0 0 0 6px rgba(251, 230, 123, 0.18);
+}
+.reply__seal {
+  position: absolute;
+  top: 0; left: 50%;
+  display: grid;
+  place-items: center;
+  width: 64px; height: 64px;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #FFF4C2 0%, #F7D14E 38%, #D4A041 70%, #A86E22 100%);
+  box-shadow: 0 8px 20px rgba(20, 0, 8, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.6), inset 0 -3px 6px rgba(120, 60, 10, 0.35);
+}
+.reply__heart { width: 26px; height: 26px; fill: var(--burgundy-deep); }
+.reply__tick {
+  position: absolute;
+  right: -4px; bottom: -4px;
+  width: 26px; height: 26px;
+  padding: 5px;
+  border-radius: 50%;
+  background: var(--ivory);
+  box-shadow: 0 2px 6px rgba(20, 0, 8, 0.35);
+  fill: none;
+  stroke: var(--wine);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 22;
+  stroke-dashoffset: 0;
+}
+.reply.is-no .reply__tick { display: none; }
+
+.reply__label {
+  font-size: var(--t-caption);
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--on-dark-soft);
+}
+.reply__answer {
+  margin-top: var(--s-2);
+  font-family: var(--font-name);
+  font-size: clamp(2.2rem, 9.5vw, 2.7rem);
+  line-height: 1.15;
+  background: var(--grad-gold);
+  -webkit-background-clip: text;
+          background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 2px 6px rgba(20, 0, 8, 0.45));
+}
+.reply__detail {
+  margin-top: var(--s-2);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold-pale);
+  text-wrap: balance;
+}
+.reply__thanks {
+  max-width: 26ch;
+  margin: var(--s-3) auto 0;
+  font-style: italic;
+  color: var(--on-dark-soft);
+  text-wrap: balance;
+}
+.reply .actions--rsvp { margin-top: var(--s-6); }
+.reply__links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: var(--s-1) var(--s-3);
+  margin-top: var(--s-4);
+  font-size: 0.9rem;
+  color: var(--on-dark-soft);
+}
+.reply__link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 var(--s-1);
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.3em;
+  text-decoration-color: color-mix(in oklab, currentColor 45%, transparent);
+  cursor: pointer;
+}
+@media (hover: hover) { .reply__link:hover { text-decoration-color: currentColor; } }
+
+/* The reply arrives like a stamp pressed onto the card. */
+.reply.is-stamped .reply__card { animation: reply-rise 0.8s var(--ease-out) both; }
+.reply.is-stamped .reply__seal { animation: seal-press 0.75s var(--ease-spring) 0.15s both; }
+.reply.is-stamped .reply__tick { animation: tick-draw 0.5s var(--ease-out) 0.75s both; }
+.reply.is-stamped .reply__card > p { animation: reply-line 0.7s var(--ease-out) both; }
+.reply.is-stamped .reply__label   { animation-delay: 0.35s; }
+.reply.is-stamped .reply__answer  { animation-delay: 0.45s; }
+.reply.is-stamped .reply__detail  { animation-delay: 0.55s; }
+.reply.is-stamped .reply__thanks  { animation-delay: 0.65s; }
+.reply.is-stamped .actions--rsvp,
+.reply.is-stamped .reply__links { animation: reply-line 0.7s var(--ease-out) 0.8s both; }
+@keyframes reply-rise { from { opacity: 0; transform: translateY(18px) scale(0.97); } to { opacity: 1; transform: none; } }
+@keyframes seal-press {
+  from { opacity: 0; scale: 1.9; rotate: -24deg; }
+  60%  { opacity: 1; scale: 0.92; }
+  to   { opacity: 1; scale: 1; rotate: 0deg; }
+}
+@keyframes tick-draw { from { stroke-dashoffset: 22; } to { stroke-dashoffset: 0; } }
+@keyframes reply-line { from { opacity: 0; translate: 0 8px; } to { opacity: 1; translate: 0 0; } }
+
+/* ---- Plan your journey -------------------------------------------------------- */
+.journey__for {
+  margin-top: var(--s-2);
+  font-size: 0.9rem;
+  font-style: italic;
+  color: var(--ink-soft);
+  text-wrap: balance;
+}
+.journey__field {
+  display: grid;
+  gap: var(--s-2);
+  margin-top: var(--s-6);
+  text-align: left;
+}
+.journey__label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.journey__input {
+  width: 100%;
+  min-height: 52px;
+  padding: 0 var(--s-4);
+  border: 1px solid rgba(169, 103, 58, 0.45);
+  border-radius: 14px;
+  background: rgba(255, 253, 247, 0.9);
+  font: 1rem/1.3 var(--font-body);   /* 16px, so iOS does not zoom in */
+  color: var(--ink);
+  box-shadow: inset 0 1px 3px rgba(90, 45, 15, 0.12);
+}
+.journey__input::placeholder { color: rgba(124, 90, 78, 0.6); }
+.journey__input:focus { outline: 2px solid var(--copper); outline-offset: 1px; border-color: transparent; }
+.journey__locate {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: 600 0.85rem/1 var(--font-body);
+  color: var(--bronze);
+  cursor: pointer;
+}
+.journey__locate svg { width: 16px; height: 16px; fill: currentColor; }
+.journey__locate span { text-decoration: underline; text-underline-offset: 0.3em; text-decoration-color: rgba(138, 75, 34, 0.4); }
+.journey__locate:disabled { opacity: 0.6; cursor: progress; }
+.journey .attend__options { margin-top: var(--s-4); }
+.journey__go { opacity: 1; }
+.journey__go[aria-disabled="true"] { filter: saturate(0.55) brightness(1.04); }
+.journey__status {
+  min-height: 1.3em;
+  margin-top: var(--s-2);
+  font-size: 0.85rem;
+  color: var(--wine);
+}
+.journey__small { margin-top: var(--s-1); font-size: 0.8rem; color: var(--ink-soft); }
+.journey__small .reply__link { min-height: 36px; }
+.journey__privacy { font-style: italic; opacity: 0.85; }
+
 /* ============================================================================
    Breakpoints: each one a designed state
    ========================================================================== */
