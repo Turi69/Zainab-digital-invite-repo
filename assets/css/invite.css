@@ -2455,7 +2455,7 @@ html.is-attending { overflow: hidden; }
   position: relative;
   max-width: 24rem;
   margin: 0 auto;
-  padding: var(--s-12) var(--s-6) var(--s-8);
+  padding: var(--s-8) var(--s-6);
   border: 1px solid rgba(251, 230, 123, 0.5);
   border-radius: 20px;
   background:
@@ -2463,36 +2463,6 @@ html.is-attending { overflow: hidden; }
     rgba(255, 255, 240, 0.04);
   box-shadow: inset 0 0 0 5px rgba(74, 0, 37, 0.35), inset 0 0 0 6px rgba(251, 230, 123, 0.18);
 }
-.reply__seal {
-  position: absolute;
-  top: 0; left: 50%;
-  display: grid;
-  place-items: center;
-  width: 64px; height: 64px;
-  translate: -50% -50%;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #FFF4C2 0%, #F7D14E 38%, #D4A041 70%, #A86E22 100%);
-  box-shadow: 0 8px 20px rgba(20, 0, 8, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.6), inset 0 -3px 6px rgba(120, 60, 10, 0.35);
-}
-.reply__heart { width: 26px; height: 26px; fill: var(--burgundy-deep); }
-.reply__tick {
-  position: absolute;
-  right: -4px; bottom: -4px;
-  width: 26px; height: 26px;
-  padding: 5px;
-  border-radius: 50%;
-  background: var(--ivory);
-  box-shadow: 0 2px 6px rgba(20, 0, 8, 0.35);
-  fill: none;
-  stroke: var(--wine);
-  stroke-width: 3;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-dasharray: 22;
-  stroke-dashoffset: 0;
-}
-.reply.is-no .reply__tick { display: none; }
-
 .reply__label {
   font-size: var(--t-caption);
   font-weight: 600;
@@ -2555,10 +2525,8 @@ html.is-attending { overflow: hidden; }
 }
 @media (hover: hover) { .reply__link:hover { text-decoration-color: currentColor; } }
 
-/* The reply arrives like a stamp pressed onto the card. */
+/* The reply card rises in, line by line. */
 .reply.is-stamped .reply__card { animation: reply-rise 0.8s var(--ease-out) both; }
-.reply.is-stamped .reply__seal { animation: seal-press 0.75s var(--ease-spring) 0.15s both; }
-.reply.is-stamped .reply__tick { animation: tick-draw 0.5s var(--ease-out) 0.75s both; }
 .reply.is-stamped .reply__card > p { animation: reply-line 0.7s var(--ease-out) both; }
 .reply.is-stamped .reply__label   { animation-delay: 0.35s; }
 .reply.is-stamped .reply__answer  { animation-delay: 0.45s; }
@@ -2567,12 +2535,6 @@ html.is-attending { overflow: hidden; }
 .reply.is-stamped .actions--rsvp,
 .reply.is-stamped .reply__links { animation: reply-line 0.7s var(--ease-out) 0.8s both; }
 @keyframes reply-rise { from { opacity: 0; transform: translateY(18px) scale(0.97); } to { opacity: 1; transform: none; } }
-@keyframes seal-press {
-  from { opacity: 0; scale: 1.9; rotate: -24deg; }
-  60%  { opacity: 1; scale: 0.92; }
-  to   { opacity: 1; scale: 1; rotate: 0deg; }
-}
-@keyframes tick-draw { from { stroke-dashoffset: 22; } to { stroke-dashoffset: 0; } }
 @keyframes reply-line { from { opacity: 0; translate: 0 8px; } to { opacity: 1; translate: 0 0; } }
 
 /* ---- Plan your journey -------------------------------------------------------- */

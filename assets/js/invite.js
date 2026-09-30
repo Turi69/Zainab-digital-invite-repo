@@ -181,7 +181,7 @@
       void box.offsetWidth;
       box.classList.add('is-stamped');
       window.setTimeout(function () {
-        burst(box.querySelector('.reply__seal'), 22, undefined, undefined, yes ? 0.45 : 0.2);
+        burst(box.querySelector('.reply__answer'), 22, undefined, undefined, yes ? 0.45 : 0.2);
         if (yes && ambient) ambient.flurry(14, 'left');
       }, 380);
     }
