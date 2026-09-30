@@ -19,7 +19,7 @@
 <link rel="preload" as="fetch" href="assets/fonts/GreatVibes-sub.ttf" type="font/ttf" crossorigin />
 <link rel="preload" as="image" href="assets/img/paper-bg.webp" />
 <link rel="preload" as="image" href="assets/img/hero-couple.webp" />
-<link rel="stylesheet" href="assets/css/invite.css?v=50" />
+<link rel="stylesheet" href="assets/css/invite.css?v=51" />
 </head>
 <body class="is-sealed">
 
@@ -416,8 +416,47 @@
   </nav>
 </main>
 
+<!-- Which celebration? Opens from "Yes, I'll be there" ............. -->
+<dialog class="attend" id="attendDialog" aria-labelledby="attendTitle">
+  <div class="attend__card piece--parchment">
+    <div class="piece__florals" aria-hidden="true">
+      <img class="bloom bloom--tl" src="assets/img/floral-tl.webp" alt="" width="720" height="700" />
+      <img class="bloom bloom--tr" src="assets/img/floral-tr.webp" alt="" width="610" height="720" />
+      <img class="bloom bloom--bl" src="assets/img/floral-bl.webp" alt="" width="720" height="679" />
+      <img class="bloom bloom--br" src="assets/img/floral-br.webp" alt="" width="684" height="720" />
+    </div>
+    <button class="attend__close" type="button" data-attend-close aria-label="Close">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+    </button>
+
+    <div class="attend__body">
+      <span class="fleuron fleuron--sm" aria-hidden="true"></span>
+      <p class="event__kicker attend__kicker">How wonderful</p>
+      <h2 class="attend__title" id="attendTitle">
+        <span class="hw hw--attend" data-hw data-ink="bronze" data-stars="5">Which will you join?</span>
+      </h2>
+      <p class="attend__lead">Choose a celebration and we will save your seat.</p>
+
+      <div class="attend__options">
+        <a class="attend__option" data-attend="trad" href="https://wa.me/2347031299072" target="_blank" rel="noopener">
+          <span class="attend__name">Traditional Wedding</span>
+          <span class="attend__when">Thursday 19 November · 2 PM</span>
+        </a>
+        <a class="attend__option" data-attend="vows" href="https://wa.me/2347031299072" target="_blank" rel="noopener">
+          <span class="attend__name">Vow Exchange &amp; Blessings</span>
+          <span class="attend__when">Saturday 21 November · 11 AM</span>
+        </a>
+        <a class="attend__option attend__option--both" data-attend="both" href="https://wa.me/2347031299072" target="_blank" rel="noopener">
+          <span class="attend__name"><svg aria-hidden="true"><use href="#ic-heart"/></svg>Both celebrations</span>
+          <span class="attend__when">Thursday 19 &amp; Saturday 21 November</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</dialog>
+
 <script src="assets/js/vendor/opentype.min.js"></script>
-<script src="assets/js/handwriting.js?v=50"></script>
-<script src="assets/js/invite.js?v=50"></script>
+<script src="assets/js/handwriting.js?v=51"></script>
+<script src="assets/js/invite.js?v=51"></script>
 </body>
 </html>

@@ -27,6 +27,7 @@
     resetGuest:   document.getElementById('resetGuest'),
     rsvpYes:      document.getElementById('rsvpYes'),
     rsvpNo:       document.getElementById('rsvpNo'),
+    attend:       document.getElementById('attendDialog'),
     dock:         document.getElementById('dock'),
     ambient:      document.getElementById('ambient')
   };
@@ -67,39 +68,120 @@
     document.title = entry ? salutation + ', you are invited' : 'Zainab & Mmedaraobong: you are invited';
   }
 
-  // The two RSVP buttons open WhatsApp with a reply already written. A couple
-  // or a family ("Mummy and Daddy", "The Alis") answers as "we".
+  // The RSVP replies open WhatsApp with a message already written. A couple
+  // or a family ("Mummy and Daddy", "The Alis") answers as "we". The answer
+  // heads the message in bold (WhatsApp's *asterisks*), so the couple can
+  // read every reply at a glance in their chat list.
   var RSVP_NUMBER = '2347031299072';
+  var CELEBRATIONS = {
+    trad: { title: 'Traditional Wedding, Thursday 19 November',
+            line: 'the Traditional Wedding on Thursday 19 November' },
+    vows: { title: 'Vow Exchange & Blessings, Saturday 21 November',
+            line: 'the Vow Exchange and Blessings on Saturday 21 November' },
+    both: { title: 'Both celebrations, 19 & 21 November',
+            line: 'both the Traditional Wedding on Thursday 19 November and the Vow Exchange and Blessings on Saturday 21 November' }
+  };
+
+  function waLink(lines) {
+    return 'https://wa.me/' + RSVP_NUMBER + '?text=' + encodeURIComponent(lines.join('\n'));
+  }
+
   function setRsvp(name) {
     var we = /\s(and|&)\s|^the\s/i.test(name);
     var hi = 'Hello Zainab and Mmedaraobong' + (name ? ', it’s ' + (we ? 'us, ' : '') + name : '') + '.';
-    var replies = {
-      yes: {
-        label: we ? 'Yes, we’ll be there' : 'Yes, I’ll be there',
-        text: hi + ' Thank you so much for the beautiful invitation. ' +
-          (we ? 'We are delighted to say yes: we will be there in Uyo to celebrate with you, and we cannot wait to see you both. '
-              : 'I am delighted to say yes: I will be there in Uyo to celebrate with you, and I cannot wait to see you both. ') +
+    var yes = we ? 'Yes, we’ll be there' : 'Yes, I’ll be there';
+    var no = we ? 'Sadly, we can’t make it' : 'Sadly, I can’t make it';
+
+    function yesLink(key) {
+      var c = CELEBRATIONS[key];
+      return waLink([
+        '*' + yes + '*',
+        '*' + c.title + '*',
+        '',
+        hi + ' Thank you so much for the beautiful invitation. ' +
+          (we ? 'We are delighted to say yes: we will be there for ' + c.line + ', and we cannot wait to celebrate with you both. '
+              : 'I am delighted to say yes: I will be there for ' + c.line + ', and I cannot wait to celebrate with you both. ') +
           'Congratulations 🤍'
-      },
-      no: {
-        label: we ? 'Sadly, we can’t make it' : 'Sadly, I can’t make it',
-        text: hi + ' Thank you so much for the beautiful invitation, it truly means a lot. ' +
+      ]);
+    }
+
+    if (el.rsvpYes) {
+      // Without the chooser (no <dialog> support) the button still sends a yes.
+      el.rsvpYes.href = yesLink('both');
+      el.rsvpYes.querySelector('[data-rsvp-label]').textContent = yes;
+    }
+    if (el.rsvpNo) {
+      el.rsvpNo.href = waLink([
+        '*' + no + '*',
+        '',
+        hi + ' Thank you so much for the beautiful invitation, it truly means a lot. ' +
           (we ? 'Sadly, we will not be able to make it, but we will be with you in spirit and cheering you on from afar. '
               : 'Sadly, I will not be able to make it, but I will be with you in spirit and cheering you on from afar. ') +
           'Wishing you both a lifetime of love and joy 🤍'
-      }
-    };
-    [[el.rsvpYes, replies.yes], [el.rsvpNo, replies.no]].forEach(function (pair) {
-      if (!pair[0]) return;
-      // The button's words head the message in bold (WhatsApp's *asterisks*),
-      // so the couple can see the answer at a glance in their chat list.
-      var message = '*' + pair[1].label + '*\n\n' + pair[1].text;
-      pair[0].href = 'https://wa.me/' + RSVP_NUMBER + '?text=' + encodeURIComponent(message);
-      var label = pair[0].querySelector('[data-rsvp-label]');
-      if (label) label.textContent = pair[1].label;
-    });
+      ]);
+      el.rsvpNo.querySelector('[data-rsvp-label]').textContent = no;
+    }
+    if (el.attend) {
+      Array.prototype.forEach.call(el.attend.querySelectorAll('[data-attend]'), function (a) {
+        a.href = yesLink(a.getAttribute('data-attend'));
+      });
+    }
   }
   setRsvp('');
+
+  /* ── Which celebration? ─────────────────────────────────────────────────
+     "Yes" opens a small card, dressed like the top of the invitation, asking
+     which celebration the guest will come to. Each choice opens WhatsApp
+     with that choice written into the reply. */
+  function attendChooser() {
+    var dialog = el.attend;
+    if (!el.rsvpYes || !dialog || typeof dialog.showModal !== 'function') return;
+    var card = dialog.querySelector('.attend__card');
+    var title = dialog.querySelector('.hw--attend');
+    var closing = false;
+
+    function open(event) {
+      event.preventDefault();
+      if (dialog.open) return;
+      closing = false;
+      dialog.classList.remove('is-closing');
+      document.documentElement.classList.add('is-attending');
+      dialog.showModal();
+      // Next frame, so the florals and the card animate in from their start.
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () {
+          dialog.classList.add('is-open');
+          card.classList.add('is-in');
+        });
+      });
+      if (title) window.setTimeout(function () { window.Handwriting.write(title); }, 450);
+      if (ambient) ambient.flurry(16, 'left');
+    }
+
+    function close() {
+      if (!dialog.open || closing) return;
+      closing = true;
+      dialog.classList.add('is-closing');
+      dialog.classList.remove('is-open');
+      window.setTimeout(function () {
+        dialog.close();
+        dialog.classList.remove('is-closing');
+        card.classList.remove('is-in');
+        document.documentElement.classList.remove('is-attending');
+        closing = false;
+      }, reduceMotion.matches ? 0 : 320);
+    }
+
+    el.rsvpYes.addEventListener('click', open);
+    dialog.addEventListener('cancel', function (event) { event.preventDefault(); close(); });
+    dialog.addEventListener('click', function (event) {
+      if (event.target === dialog || event.target.closest('[data-attend-close]')) close();
+    });
+    // The link opens WhatsApp in a new tab; tidy the card away behind it.
+    Array.prototype.forEach.call(dialog.querySelectorAll('[data-attend]'), function (a) {
+      a.addEventListener('click', function () { window.setTimeout(close, 250); });
+    });
+  }
 
   function rememberGuest(name) {
     try {
@@ -1333,6 +1415,7 @@
     // Petals drift behind the gate and the envelope from the first second.
     startAmbient();
     debugPanel();
+    attendChooser();
 
     var stored = null;
     try { stored = localStorage.getItem(STORAGE_KEY); } catch (err) { /* no storage */ }
