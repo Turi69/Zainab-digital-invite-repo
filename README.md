@@ -74,7 +74,7 @@ When you change a CSS or JS file, bump the `?v=` number on its link in
 
 | Section | What happens |
 |---|---|
-| Hero: the two of us | Parchment with burgundy florals growing in from all four corners. The couple photo rises into an arch whose bronze frame draws itself; photos crossfade with a slow push-in. The ZM seal presses down, then the couple's names **write themselves** in bronze foil with a spark on the pen nib. A swash draws underneath, "Two hearts, one love" is written, and the dates and place follow. A gust carries petals across the card. |
+| Hero: the two of us | Parchment with burgundy florals growing in from all four corners. The ZM seal presses down as the centrepiece (the couple chose no photo), then their names **write themselves** in bronze foil with a spark on the pen nib. A swash draws underneath, "Two hearts, one love" is written, and the dates, place and Matthew 7:24–25 follow. A gust carries petals across the card. |
 | A special message | "Dear Friends & Family," is handwritten, the couple's special message arrives word by word, then the signature is written. From a personal link it is "Dear [name]," and that guest's own note. |
 | Traditional Wedding | Burgundy, from printed card 2. The date rolls up to 19 and the rules extend. Photographic keepsakes settle into the bottom corners one after another: folded aso-oke and a carved calabash on the left, a carved gourd and a coral necklace (which keeps a slow sway) on the right. Cut-outs are `assets/img/trad-*.webp`. |
 | Vow Exchange & Blessings | Ivory, from printed card 3. A pair of gold rings drops in, floats and catches the light. Reception venue and directions. |
@@ -128,17 +128,6 @@ envelope then reads "To Carly" and the note becomes "Dear Carly," with their
 `message` (without one, the couple's special message). Matching ignores case,
 extra spaces, accents and punctuation. The plain address, or a name not on the
 list, opens the general invitation for Friends & Family.
-
-### The couple photos: `index.html`, section "1 · The two of us (hero)"
-
-Each `<img class="arch__photo">` inside `.arch__window` is one slide; they
-crossfade in order every 6.5 seconds. Add, remove or replace them, and set
-`--pos` on each to choose the focal point of the crop (for example
-`style="--pos: 50% 25%"` keeps faces near the top of the arch). Portrait photos
-suit the arch best. Update each `alt` to describe the photo.
-
-The two photos in there now are the ones from the Figma file and stand in until
-the final photos arrive.
 
 ### Dates, times, venues
 
@@ -201,7 +190,6 @@ them through. With Reduce Motion on, lines appear at once and nothing is held.
 
 | Item | Where | Note |
 |---|---|---|
-| Couple photos | `index.html` | Placeholders until the couple send a personal photo; if none suits, the photo comes off. |
 | Music | `assets/audio/` | The couple are choosing a track; replace the file (or `SRC` in `invite.js`). |
 | Vow exchange venue | `index.html`, `invite.js` | The printed card gives 11 AM and the reception venue, but not where the vows take place. The calendar file uses the reception venue for now. |
 | "Specially invite you" | `index.html` | The print says "Specially invites"; with two sets of parents the verb is plural. |

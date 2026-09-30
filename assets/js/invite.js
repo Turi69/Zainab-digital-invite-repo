@@ -597,8 +597,8 @@
     // Every line in the hero holds the scroll until it has been written.
     names.concat(afterNames).forEach(function (node) { window.Handwriting.hold.start(node, true); });
 
-    // Florals grow in, the photo rises into its arch and the seal presses
-    // down; the pen starts once the portrait has settled.
+    // Florals grow in and the ZM seal presses
+    // down; the pen starts once it has settled.
     wait(2000)
       .then(function () {
         return names.reduce(function (chain, node, i) {
