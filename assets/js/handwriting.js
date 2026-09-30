@@ -239,6 +239,15 @@
     }
   }
 
+  /* The pen keeps pace with the reader. Each frame it measures how fast the
+     line is travelling up the screen and, if the reader is scrolling on, writes
+     just fast enough to finish while the line is still in view. If the line
+     leaves the screen anyway, the pen stops mid-word and carries on from the
+     same place when the reader comes back. The promise settles as soon as the
+     line is finished or first scrolled away, so the rest of the section never
+     waits on a line nobody is looking at. */
+  var MAX_RATE = 6;
+
   function animate(el, state) {
     return new Promise(function (resolve) {
       var total = state.strokes.reduce(function (sum, s) { return sum + s.len; }, 0);
@@ -252,12 +261,51 @@
       el.appendChild(pen);
       el.classList.add('is-writing');
 
-      var start = null;
+      var t = 0;
+      var last = null;
+      var lastTop = null;
+      var velocity = 0;          // px per second the line is rising, smoothed
       var lastEmber = 0;
+      var waiting = null;
+
+      // Off screen: stop the pen and wait until the line is back in view.
+      function pause() {
+        last = null; lastTop = null; velocity = 0;
+        pen.style.opacity = 0;
+        resolve();
+        if (!('IntersectionObserver' in window)) { requestAnimationFrame(frame); return; }
+        waiting = new IntersectionObserver(function (entries) {
+          if (!entries[0].isIntersecting) return;
+          waiting.disconnect();
+          waiting = null;
+          requestAnimationFrame(frame);
+        }, { threshold: 0.6 });
+        waiting.observe(el);
+      }
 
       function frame(now) {
-        if (start === null) start = now;
-        var t = Math.min(1, (now - start) / duration);
+        var rect = el.getBoundingClientRect();
+        var vh = window.innerHeight || document.documentElement.clientHeight;
+        var shown = rect.height === 0 || (rect.bottom > 0 && rect.top < vh);
+        if (!shown) { pause(); return; }
+
+        var dt = last === null ? 0 : Math.min(0.1, (now - last) / 1000);
+        if (dt > 0 && lastTop !== null) {
+          var v = (lastTop - rect.top) / dt;
+          velocity += (v - velocity) * Math.min(1, dt * 10);
+        }
+        last = now;
+        lastTop = rect.top;
+
+        // Time left before the line nears the top edge, at the current scroll.
+        var rate = 1;
+        if (velocity > 40) {
+          var left = (rect.top - vh * 0.08) / velocity;
+          var needed = ((1 - t) * duration) / 1000;
+          if (left > 0 && needed > left * 0.85) rate = Math.min(MAX_RATE, needed / (left * 0.85));
+          else if (left <= 0) rate = MAX_RATE;
+        }
+        t = Math.min(1, t + (dt * 1000 * rate) / duration);
         var drawn = ease(t) * total;
         var acc = 0;
         var nib = null;
