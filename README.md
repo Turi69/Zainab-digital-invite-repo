@@ -126,7 +126,8 @@ One entry per guest:
 `names` are every spelling that should let them in; `salutation` is written as
 "Dear Ada,"; `message` is optional and falls back to the default note in
 `index.html`. Matching ignores case, extra spaces, accents and punctuation. A
-guest who is not on the list gets two tries, then an **Open it anyway** link.
+name that is not on the list does not open the card; after two tries the gate
+points the guest to the couple's number.
 The name is remembered in `localStorage`; **Not [name]? Start again** clears it.
 
 ### The couple photos: `index.html`, section "1 · The two of us (hero)"

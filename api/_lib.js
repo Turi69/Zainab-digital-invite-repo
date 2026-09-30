@@ -18,11 +18,20 @@ function normalise(value) {
 }
 
 let guestIndex = null;
+let guestStamp = null;
 function findGuest(name) {
+  // Re-read the file whenever it changes, so an edited list is picked up
+  // without restarting the local server.
+  const file = path.join(PRIVATE, 'guests.json');
+  if (!process.env.GUESTS_JSON) {
+    let stamp = null;
+    try { stamp = fs.statSync(file).mtimeMs; } catch (err) { /* read below reports it */ }
+    if (stamp !== guestStamp) { guestIndex = null; guestStamp = stamp; }
+  }
   if (!guestIndex) {
     // GUESTS_JSON (an environment variable) wins over the file, so the list
     // can be kept out of the repository entirely if you prefer.
-    const raw = process.env.GUESTS_JSON || fs.readFileSync(path.join(PRIVATE, 'guests.json'), 'utf8');
+    const raw = process.env.GUESTS_JSON || fs.readFileSync(file, 'utf8');
     guestIndex = Object.create(null);
     JSON.parse(raw).forEach(function (entry) {
       (entry.names || []).forEach(function (n) {

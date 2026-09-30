@@ -293,20 +293,6 @@ a {
 }
 .gate__error.is-shown { opacity: 1; }
 
-.gate__skip {
-  margin-top: var(--s-2);
-  padding: var(--s-2) var(--s-3);
-  font-family: var(--font-body);
-  font-size: var(--t-small);
-  color: var(--ink-soft);
-  background: none;
-  border: 0;
-  cursor: pointer;
-  text-decoration: underline;
-  text-underline-offset: 0.22em;
-  min-height: 44px;
-}
-
 .gate__card.is-shaking { animation: gate-shake 460ms var(--ease-in-out); }
 @keyframes gate-shake {
   0%, 100% { transform: translateX(0); }
@@ -2653,7 +2639,7 @@ html.is-attending { overflow: hidden; }
 }
 
 @media (pointer: coarse) {
-  .gate__skip, .finale__reset { min-height: 48px; }
+  .finale__reset { min-height: 48px; }
 }
 
 /* ============================================================================

@@ -15,7 +15,6 @@
     gateForm:     document.getElementById('gateForm'),
     gateInput:    document.getElementById('gateInput'),
     gateError:    document.getElementById('gate-error'),
-    gateSkip:     document.getElementById('gateSkip'),
     stage:        document.getElementById('stage'),
     envelope:     document.getElementById('envelope'),
     envelopeOpen: document.getElementById('envelopeOpen'),
@@ -484,12 +483,11 @@
       busy(false);
       if (!reply.ok) {
         attempts += 1;
-        // Two misses is enough. A guest whose nickname we did not think of
-        // should never be locked out of their friends' wedding.
-        if (attempts >= 2) el.gateSkip.hidden = false;
+        // Only names on the guest list open the card; after two misses,
+        // point the guest to the couple rather than a way round.
         showError(
           attempts >= 2
-            ? 'Still no match. Try the name on your save the date, or open it anyway.'
+            ? 'Still no match. Try the name on your save the date, or message the couple on 0703 129 9072.'
             : 'We cannot find that name. Try the spelling on your save the date.'
         );
         return;
@@ -500,22 +498,12 @@
       hideGate();
     }).catch(function () {
       busy(false);
-      el.gateSkip.hidden = false;
-      showError('Could not check the guest list just now. Open it anyway, or try again.');
+      showError('Could not check the guest list just now. Check your connection and try again.');
     });
   });
 
   el.gateInput.addEventListener('input', function () {
     if (el.gateError.classList.contains('is-shown')) clearError();
-  });
-
-  el.gateSkip.addEventListener('click', function () {
-    var typed = el.gateInput.value.trim();
-    clearError();
-    applyGuest(typed ? { salutation: typed } : null);
-    // They have already been let in once; do not make them type it again.
-    rememberGuest(typed);
-    hideGate();
   });
 
   el.resetGuest.addEventListener('click', function () {
