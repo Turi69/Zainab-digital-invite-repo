@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Zainab &amp; Mmedaraobong: you are invited</title>
+<meta name="description" content="Zainab Ali and Mmedaraobong Joshua invite you to their wedding. Uyo, 19 and 21 November 2026." />
+<meta name="theme-color" content="#2B0716" />
+
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Zainab &amp; Mmedaraobong: you are invited" />
+<meta property="og:description" content="Uyo, 19 and 21 November 2026. Open your invitation." />
+<meta property="og:image" content="assets/img/hero-couple.webp" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Pinyon+Script&family=Great+Vibes&display=swap" />
+
+<link rel="preload" as="fetch" href="assets/fonts/GreatVibes-sub.ttf" type="font/ttf" crossorigin />
+<link rel="preload" as="image" href="assets/img/paper-bg.webp" />
+<link rel="preload" as="image" href="assets/img/hero-couple.webp" />
+<link rel="stylesheet" href="assets/css/invite.css?v=40" />
+</head>
+<body class="is-sealed">
+
+<!-- Velvet backdrop for the gate and envelope; the petal layer drifts over it. -->
+<div class="backdrop" aria-hidden="true"></div>
+<canvas class="ambient" id="ambient" aria-hidden="true"></canvas>
+<div class="flash" id="flash" aria-hidden="true"></div>
+
+<!-- ─────────────────────────────────────────────────────────────
+     Shared vector defs
+     ───────────────────────────────────────────────────────────── -->
+<svg class="u-vector-defs" aria-hidden="true" focusable="false" width="0" height="0">
+  <defs>
+    <!-- Icons: clock and pin are the exact paths from the Figma file -->
+    <symbol id="ic-clock" viewBox="0 0 28 28"><path d="M14 2.33333C7.55875 2.33333 2.33333 7.55875 2.33333 14C2.33333 20.4412 7.55875 25.6667 14 25.6667C20.4412 25.6667 25.6667 20.4412 25.6667 14C25.6667 7.55875 20.4412 2.33333 14 2.33333ZM14 23.3333C8.84625 23.3333 4.66667 19.1537 4.66667 14C4.66667 8.84625 8.84625 4.66667 14 4.66667C19.1537 4.66667 23.3333 8.84625 23.3333 14C23.3333 19.1537 19.1537 23.3333 14 23.3333ZM15.1667 7.58333H13.125V14.5833L18.9583 18.0833L19.8333 16.6483L15.1667 13.8542V7.58333Z"/></symbol>
+    <symbol id="ic-pin" viewBox="0 0 28 28"><path d="M14 14C14.6417 14 15.191 13.7715 15.6479 13.3146C16.1049 12.8576 16.3333 12.3083 16.3333 11.6667C16.3333 11.025 16.1049 10.4757 15.6479 10.0188C15.191 9.56181 14.6417 9.33333 14 9.33333C13.3583 9.33333 12.809 9.56181 12.3521 10.0188C11.8951 10.4757 11.6667 11.025 11.6667 11.6667C11.6667 12.3083 11.8951 12.8576 12.3521 13.3146C12.809 13.7715 13.3583 14 14 14ZM14 25.6667C10.8694 23.0028 8.53125 20.5285 6.98542 18.2438C5.43958 15.959 4.66667 13.8444 4.66667 11.9C4.66667 8.98333 5.60486 6.65972 7.48125 4.92917C9.35764 3.19861 11.5306 2.33333 14 2.33333C16.4694 2.33333 18.6424 3.19861 20.5187 4.92917C22.3951 6.65972 23.3333 8.98333 23.3333 11.9C23.3333 13.8444 22.5604 15.959 21.0146 18.2438C19.4687 20.5285 17.1306 23.0028 14 25.6667Z"/></symbol>
+    <symbol id="ic-calendar" viewBox="0 0 24 24"><path d="M7 2h2v2h6V2h2v2h2.5A1.5 1.5 0 0 1 21 5.5v14a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 19.5v-14A1.5 1.5 0 0 1 4.5 4H7V2Zm12 8H5v9h14v-9ZM5 8h14V6H5v2Zm2 4h3v3H7v-3Z"/></symbol>
+    <symbol id="ic-phone" viewBox="0 0 24 24"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1L6.6 10.8Z"/></symbol>
+    <symbol id="ic-chat" viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18a8 8 0 0 1-4.1-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8 8 0 1 1 12 20Zm4.4-6c-.2-.1-1.4-.7-1.7-.8-.2-.1-.4-.1-.5.1l-.8 1c-.1.2-.3.2-.5.1a6.6 6.6 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.5-.4h-.5a.9.9 0 0 0-.6.3 2.7 2.7 0 0 0-.9 2 4.7 4.7 0 0 0 1 2.5 10.8 10.8 0 0 0 4.1 3.6c1.5.7 2.1.7 2.9.6a2.4 2.4 0 0 0 1.6-1.1 2 2 0 0 0 .1-1.1l-.3-.2Z"/></symbol>
+    <symbol id="ic-arrow" viewBox="0 0 24 24"><path d="M11 4h2v12.2l4.6-4.6 1.4 1.4-7 7-7-7 1.4-1.4 4.6 4.6V4Z"/></symbol>
+    <symbol id="ic-heart" viewBox="0 0 20 20"><path d="M10 18.2C4.4 13.9 1 10.9 1 6.9A4.6 4.6 0 0 1 10 5a4.6 4.6 0 0 1 9 1.9c0 4-3.4 7-9 11.3Z"/></symbol>
+    <symbol id="ic-spark" viewBox="0 0 20 20"><path d="M10 0C10.9 6.6 13.4 9.1 20 10 13.4 10.9 10.9 13.4 10 20 9.1 13.4 6.6 10.9 0 10 6.6 9.1 9.1 6.6 10 0Z"/></symbol>
+  </defs>
+</svg>
+
+
+<!-- ─────────────────────────────────────────────────────────────
+     1. The name gate
+     ───────────────────────────────────────────────────────────── -->
+<div class="gate" id="gate" role="dialog" aria-modal="true" aria-labelledby="gate-title" hidden>
+  <div class="gate__card" id="gateCard">
+    <span class="gate__light" aria-hidden="true"></span>
+    <img class="gate__fleuron" src="assets/img/fleuron-top.png" alt="" width="83" height="32" />
+
+    <p class="gate__eyebrow">The wedding of</p>
+    <h1 class="gate__title" id="gate-title">
+      <span class="hw hw--gate" data-hw data-ink="bronze">Zainab</span>
+      <span class="hw hw--gate-amp" data-hw data-ink="bronze">&amp;</span>
+      <span class="hw hw--gate" data-hw data-ink="bronze">Mmedaraobong</span>
+    </h1>
+    <p class="gate__prompt">Your invitation is sealed. Tell us your name and we will open it.</p>
+
+    <form class="gate__form" id="gateForm" novalidate>
+      <label class="u-visually-hidden" for="gateInput">Your name</label>
+      <input
+        class="gate__input" id="gateInput" name="guest" type="text"
+        autocomplete="name" autocapitalize="words" spellcheck="false"
+        enterkeyhint="go" placeholder="Your name" aria-describedby="gate-error" />
+      <button class="gate__submit" type="submit">Find my invitation</button>
+    </form>
+
+    <p class="gate__error" id="gate-error" role="alert"></p>
+    <button class="gate__skip" id="gateSkip" type="button" hidden>Open it anyway</button>
+
+    <img class="gate__fleuron gate__fleuron--btm" src="assets/img/fleuron-bottom.png" alt="" width="83" height="32" />
+  </div>
+</div>
+
+
+<!-- ─────────────────────────────────────────────────────────────
+     2. The envelope
+     ───────────────────────────────────────────────────────────── -->
+<div class="stage" id="stage" hidden>
+  <div class="stage__scene">
+    <div class="envelope" id="envelope">
+      <div class="envelope__back" aria-hidden="true"></div>
+      <div class="envelope__letter" aria-hidden="true">
+        <img src="assets/img/fleuron-top.svg" alt="" width="126" height="49" />
+        <img class="envelope__letter-mono" src="assets/img/monogram.webp" alt="" width="741" height="760" />
+        <span>You are invited</span>
+      </div>
+      <div class="envelope__body">
+        <!-- Each fold is its own sheet, so it can cast a shadow on the one below. -->
+        <span class="env-fold env-fold--l" aria-hidden="true"><i></i></span>
+        <span class="env-fold env-fold--r" aria-hidden="true"><i></i></span>
+        <span class="env-fold env-fold--b" aria-hidden="true"><i></i></span>
+        <span class="envelope__flap-shadow" aria-hidden="true"><i></i></span>
+        <span class="envelope__light" aria-hidden="true"></span>
+        <span class="envelope__glint" aria-hidden="true"></span>
+        <p class="envelope__addressee"><span class="hw hw--addressee" id="envelopeName" data-hw data-ink="bronze">To our dear guest</span></p>
+      </div>
+
+      <div class="envelope__flap" id="envelopeFlap">
+        <span class="envelope__flap-face"></span>
+        <span class="envelope__flap-back"></span>
+      </div>
+
+      <div class="envelope__seal" id="envelopeSeal">
+        <span class="seal-glow"></span>
+        <span class="seal-half seal-half--l"><img class="seal-img" src="assets/img/wax-seal.webp" alt="" width="568" height="581" /></span>
+        <span class="seal-half seal-half--r"><img class="seal-img" src="assets/img/wax-seal.webp" alt="" width="568" height="581" /></span>
+        <span class="seal-spark seal-spark--1"><svg viewBox="0 0 20 20"><use href="#ic-spark"/></svg></span>
+        <span class="seal-spark seal-spark--2"><svg viewBox="0 0 20 20"><use href="#ic-spark"/></svg></span>
+        <span class="seal-spark seal-spark--3"><svg viewBox="0 0 20 20"><use href="#ic-spark"/></svg></span>
+      </div>
+
+      <button class="envelope__open" id="envelopeOpen" type="button">
+        <span class="u-visually-hidden">Open your invitation</span>
+      </button>
+    </div>
+
+    <p class="stage__hint" id="stageHint"><span>Tap the seal to open</span></p>
+  </div>
+</div>
+
+
+
+<!-- ─────────────────────────────────────────────────────────────
+     3. The invitation
+     One card. Its bands borrow the three printed variations in the
+     Figma file (parchment, burgundy, ivory) so the card changes
+     colour as it is read, held together by one gold frame.
+     ───────────────────────────────────────────────────────────── -->
+<main class="invite" id="invite" hidden>
+
+  <article class="sheet" aria-label="Invitation">
+    <span class="sheet__frame" aria-hidden="true"></span>
+
+    <!-- 1 · The two of us (hero) ............................... -->
+    <section class="piece piece--parchment piece--hero" id="piece-invite" aria-labelledby="hero-names" data-piece="hero">
+      <div class="piece__florals" aria-hidden="true">
+        <img class="bloom bloom--tl" src="assets/img/floral-tl.webp" alt="" width="720" height="700" data-bend="-1" />
+        <img class="bloom bloom--tr" src="assets/img/floral-tr.webp" alt="" width="610" height="720" data-bend="-1" />
+        <img class="bloom bloom--bl" data-bend="1" src="assets/img/floral-bl.webp" alt="" width="720" height="679" />
+        <img class="bloom bloom--br" data-bend="1" src="assets/img/floral-br.webp" alt="" width="684" height="720" />
+      </div>
+
+      <div class="piece__body">
+        <span class="fleuron fleuron--top fleuron--sm" data-in style="--i:0" aria-hidden="true"></span>
+
+        <figure class="arch" data-in style="--i:1">
+          <div class="arch__window">
+            <!-- Couple photos. Add, remove or replace <img class="arch__photo"> tags:
+                 they crossfade in order. --pos sets the focal point of each crop. -->
+            <img class="arch__photo" src="assets/img/hero-couple.webp" alt="Zainab and Mmedaraobong, smiling at each other" width="1400" height="1749" fetchpriority="high" style="--pos: 50% 26%" />
+            <img class="arch__photo" src="assets/img/event-traditional.webp" alt="Zainab and Mmedaraobong in matching traditional attire" width="1600" height="900" loading="lazy" style="--pos: 63% 62%" />
+          </div>
+          <svg class="arch__frame" viewBox="0 0 100 125" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+            <path pathLength="1" d="M0.5 125V50A49.5 49.5 0 0 1 50 0.5" />
+            <path pathLength="1" d="M99.5 125V50A49.5 49.5 0 0 0 50 0.5" />
+          </svg>
+        </figure>
+        <div class="monogram" data-in style="--i:2" aria-hidden="true">
+          <img src="assets/img/monogram.webp" alt="" width="741" height="760" />
+        </div>
+
+        <h1 class="hero__names" id="hero-names">
+          <span class="hw hw--name" data-hw data-ink="bronze">Zainab Ali</span>
+          <span class="hw hw--amp" data-hw data-ink="bronze">&amp;</span>
+          <span class="hw hw--name" data-hw data-ink="bronze">Mmedaraobong Joshua</span>
+        </h1>
+
+        <svg class="doodle doodle--swash" viewBox="0 0 320 40" data-in data-after-names style="--i:0" aria-hidden="true" focusable="false">
+          <defs>
+            <linearGradient id="swashInk" x1="0" x2="1" y1="0" y2="0">
+              <stop offset="0" stop-color="#8A4B22" stop-opacity="0" />
+              <stop offset="0.22" stop-color="#A9673A" />
+              <stop offset="0.5" stop-color="#D9A35E" />
+              <stop offset="0.78" stop-color="#A9673A" />
+              <stop offset="1" stop-color="#8A4B22" stop-opacity="0" />
+            </linearGradient>
+          </defs>
+          <path pathLength="1" stroke="url(#swashInk)" d="M6 24C58 32 98 8 148 18c6 1 9 6 12 11 3-5 6-10 12-11 50-10 90 14 142 6" />
+          <use class="doodle__spark" href="#ic-spark" x="153" y="2" width="14" height="14" />
+        </svg>
+
+        <p class="hero__caption" data-in data-after-names style="--i:1">
+          <span class="hw hw--caption" data-hw data-ink="bronze" data-after-names data-delay="700">Two hearts, one love</span>
+        </p>
+
+        <p class="hero__when" data-in data-after-names style="--i:3">
+          <span>Thursday 19 &amp; Saturday 21</span>
+          <span>November 2026</span>
+          <span class="hero__place">Uyo, Akwa Ibom</span>
+        </p>
+
+        <span class="fleuron fleuron--btm" data-in data-after-names style="--i:4" aria-hidden="true"></span>
+      </div>
+
+      <p class="cue" data-in data-after-names style="--i:5" aria-hidden="true"><span>Scroll</span><svg><use href="#ic-arrow"/></svg></p>
+    </section>
+
+
+    <!-- 3 · A note for you ...................................... -->
+    <section class="piece piece--note" aria-labelledby="note-title" data-piece>
+      <img class="watermark" src="assets/img/monogram.webp" alt="" width="741" height="760" loading="lazy" aria-hidden="true" />
+      <div class="piece__body">
+        <h2 class="note__salutation" id="note-title">
+          <span class="hw hw--salutation" data-hw data-ink="ink" id="guestSalutation">Dear friend,</span>
+        </h2>
+        <p class="note__body" id="guestMessage" data-words>
+          We are so glad you are part of this. Come and stand with us in Uyo this November,
+          eat well, dance badly, and help us start the rest of it properly.
+        </p>
+        <p class="note__signoff" data-in data-after-words style="--i:0">With love,</p>
+        <p class="note__signature">
+          <span class="hw hw--signature" data-hw data-ink="ink" data-after-words>Zainab &amp; Mmedaraobong</span>
+        </p>
+      </div>
+    </section>
+
+
+    <!-- 4 · Traditional wedding (printed card 2) ................ -->
+    <section class="piece piece--burgundy piece--event" id="events" aria-labelledby="event-trad" data-piece data-event="trad">
+      <!-- Traditional keepsakes: aso-oke cloth, carved calabashes, coral beads -->
+      <div class="keepsakes keepsakes--l" aria-hidden="true">
+        <img class="keepsake keepsake--cloth" src="assets/img/trad-cloth.webp" alt="" width="368" height="327" loading="lazy" />
+        <img class="keepsake keepsake--bowl" src="assets/img/trad-calabash.webp" alt="" width="328" height="237" loading="lazy" />
+        <img class="keepsake keepsake--bracelet" src="assets/img/trad-bracelet.webp" alt="" width="292" height="151" loading="lazy" />
+      </div>
+      <div class="keepsakes keepsakes--r" aria-hidden="true">
+        <img class="keepsake keepsake--coral" src="assets/img/trad-coral.webp" alt="" width="261" height="335" loading="lazy" />
+        <img class="keepsake keepsake--gourd" src="assets/img/trad-gourd.webp" alt="" width="248" height="306" loading="lazy" />
+      </div>
+
+      <div class="piece__body">
+        <p class="event__kicker" data-in style="--i:0">Event one</p>
+        <h2 class="event__title" id="event-trad" data-in style="--i:1">
+          <span class="rule rule--l" aria-hidden="true"></span>
+          <span class="event__title-text">Traditional Wedding</span>
+          <span class="rule rule--r" aria-hidden="true"></span>
+        </h2>
+
+        <div class="date" data-in style="--i:2">
+          <p class="date__month">November</p>
+          <div class="date__row">
+            <p class="date__side date__side--l">Thursday</p>
+            <p class="date__day"><span class="date__num" data-count="19">19</span></p>
+            <p class="date__side date__side--r">2 PM</p>
+          </div>
+        </div>
+
+        <div class="venue" data-in style="--i:3">
+          <p class="venue__name">Helemah Event Centre</p>
+          <p class="venue__addr">141 Aka Itiam Rd, Uyo</p>
+        </div>
+
+        <div class="actions" data-in style="--i:4">
+          <a class="btn btn--gold" href="https://www.google.com/maps/search/?api=1&amp;query=Helemah+Event+Centre%2C+141+Aka+Itiam+Rd%2C+Uyo" target="_blank" rel="noopener">
+            <svg aria-hidden="true"><use href="#ic-pin"/></svg><span>Directions</span>
+          </a>
+          <button class="btn btn--ghost" type="button" data-ics="trad">
+            <svg aria-hidden="true"><use href="#ic-calendar"/></svg><span>Add to calendar</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- 5 · Vow exchange & blessings (printed card 3) ........... -->
+    <section class="piece piece--ivory piece--event" aria-labelledby="event-vows" data-piece data-event="vows">
+      <img class="roses roses--l" data-bend="1" src="assets/img/roses-white.webp" alt="" width="210" height="283" loading="lazy" aria-hidden="true" />
+      <img class="roses roses--r" data-bend="1" src="assets/img/roses-white-r.webp" alt="" width="210" height="283" loading="lazy" aria-hidden="true" />
+
+      <div class="piece__body">
+        <div class="rings" data-in style="--i:0" aria-hidden="true">
+          <img src="assets/img/rings-gold.webp" alt="" width="720" height="330" loading="lazy" />
+          <span class="rings__spark"><svg viewBox="0 0 20 20"><use href="#ic-spark"/></svg></span>
+        </div>
+        <p class="event__kicker" data-in style="--i:1">Event two</p>
+        <h2 class="event__title" id="event-vows" data-in style="--i:2">
+          <span class="rule rule--l" aria-hidden="true"></span>
+          <span class="event__title-text">Vow Exchange &amp; Blessings</span>
+          <span class="rule rule--r" aria-hidden="true"></span>
+        </h2>
+
+        <div class="date" data-in style="--i:3">
+          <p class="date__month">November</p>
+          <div class="date__row">
+            <p class="date__side date__side--l">Saturday</p>
+            <p class="date__day"><span class="date__num" data-count="21">21</span></p>
+            <p class="date__side date__side--r">11 AM</p>
+          </div>
+        </div>
+
+        <div class="venue" data-in style="--i:4">
+          <p class="venue__lead">Reception follows immediately at</p>
+          <p class="venue__name">Duellaz Landmark Event Centre</p>
+          <p class="venue__addr">37B Line Donald Etiebet Avenue, Ewet Housing Estate, Uyo</p>
+        </div>
+
+        <div class="actions" data-in style="--i:5">
+          <a class="btn btn--bronze" href="https://www.google.com/maps/search/?api=1&amp;query=Duellaz+Landmark+Event+Centre%2C+Donald+Etiebet+Avenue%2C+Ewet+Housing+Estate%2C+Uyo" target="_blank" rel="noopener">
+            <svg aria-hidden="true"><use href="#ic-pin"/></svg><span>Directions</span>
+          </a>
+          <button class="btn btn--ghost-dark" type="button" data-ics="vows">
+            <svg aria-hidden="true"><use href="#ic-calendar"/></svg><span>Add to calendar</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- 6 · Countdown ........................................... -->
+    <section class="piece piece--burgundy piece--count" aria-labelledby="count-title" data-piece>
+      <div class="piece__body">
+        <span class="fleuron fleuron--top fleuron--sm" data-in style="--i:0" aria-hidden="true"></span>
+        <h2 class="count__title" id="count-title">
+          <span class="hw hw--title" data-hw data-ink="gold">Counting the days</span>
+        </h2>
+        <p class="count__sub" data-in style="--i:1">until the traditional wedding on 19 November</p>
+
+        <div class="count" id="countdown" data-in style="--i:2" role="timer" aria-live="off">
+          <div class="count__unit"><span class="count__num" data-unit="d">00</span><span class="count__label">Days</span></div>
+          <div class="count__unit"><span class="count__num" data-unit="h">00</span><span class="count__label">Hours</span></div>
+          <div class="count__unit"><span class="count__num" data-unit="m">00</span><span class="count__label">Minutes</span></div>
+          <div class="count__unit"><span class="count__num" data-unit="s">00</span><span class="count__label">Seconds</span></div>
+        </div>
+        <p class="count__done" id="countdownDone" hidden>The celebrations have begun.</p>
+      </div>
+    </section>
+
+
+    <!-- 7 · Colours of the day .................................. -->
+    <section class="piece piece--parchment piece--colours" aria-labelledby="colours-title" data-piece>
+      <div class="piece__body">
+        <h2 class="event__title event__title--plain" id="colours-title" data-in style="--i:0">
+          <span class="rule rule--l" aria-hidden="true"></span>
+          <span class="event__title-text">Colours of the day</span>
+          <span class="rule rule--r" aria-hidden="true"></span>
+        </h2>
+
+        <ul class="swatches">
+          <li class="swatch" data-in style="--i:1; --swatch:#800020"><span class="swatch__silk" aria-hidden="true"></span><span class="swatch__name">Burgundy</span></li>
+          <li class="swatch" data-in style="--i:2; --swatch:#D8B46A"><span class="swatch__silk" aria-hidden="true"></span><span class="swatch__name">Champagne gold</span></li>
+          <li class="swatch" data-in style="--i:3; --swatch:#FFFFF0"><span class="swatch__silk" aria-hidden="true"></span><span class="swatch__name">Ivory</span></li>
+        </ul>
+        <p class="colours__note" data-in style="--i:4">Wear any of the three, or all of them at once.</p>
+        <div class="actions" data-in style="--i:5">
+          <a class="btn btn--text" href="https://www.pinterest.com/search/pins/?q=burgundy%2C%20Champagne%20gold%20and%20ivory%20Nigerian%20traditional%20dress%20male%20and%20female&amp;rs=typed" target="_blank" rel="noopener">
+            <svg aria-hidden="true"><use href="#ic-spark"/></svg><span>Outfit inspiration</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- 8 · RSVP ................................................ -->
+    <section class="piece piece--burgundy piece--rsvp" id="rsvp" aria-labelledby="rsvp-title" data-piece>
+      <div class="piece__body">
+        <p class="event__kicker" data-in style="--i:0">RSVP</p>
+        <h2 class="rsvp__title" id="rsvp-title">
+          <span class="hw hw--title" data-hw data-ink="gold">Will you join us?</span>
+        </h2>
+        <svg class="doodle doodle--heart" viewBox="0 0 120 52" data-in style="--i:1" aria-hidden="true" focusable="false">
+          <path pathLength="1" d="M4 46c18 0 40 0 56-2-14-10-26-18-24-28 2-8 14-10 20-4 2 2 4 5 4 8 0-3 2-6 4-8 6-6 18-4 20 4 2 10-10 18-24 28 16 2 38 2 56 2" />
+        </svg>
+        <p class="rsvp__lead" data-in style="--i:2">Let us know you are coming, so there is a seat and a plate with your name on it.</p>
+        <p class="rsvp__number" data-in style="--i:3"><a href="tel:+2347031299072">0703 129 9072</a></p>
+
+        <div class="actions" data-in style="--i:4">
+          <a class="btn btn--gold" href="tel:+2347031299072">
+            <svg aria-hidden="true"><use href="#ic-phone"/></svg><span>Call</span>
+          </a>
+          <a class="btn btn--ghost" id="rsvpWhatsApp" href="https://wa.me/2347031299072" target="_blank" rel="noopener">
+            <svg aria-hidden="true"><use href="#ic-chat"/></svg><span>WhatsApp</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 9 · Closing ............................................. -->
+    <section class="piece piece--parchment finale" aria-labelledby="finale-title" data-piece>
+      <div class="piece__florals" aria-hidden="true">
+        <img class="bloom bloom--bl" data-bend="1" src="assets/img/floral-bl.webp" alt="" width="720" height="679" loading="lazy" />
+        <img class="bloom bloom--br" data-bend="1" src="assets/img/floral-br.webp" alt="" width="684" height="720" loading="lazy" />
+      </div>
+      <div class="piece__body">
+        <span class="fleuron fleuron--top fleuron--sm" data-in style="--i:0" aria-hidden="true"></span>
+        <h2 class="finale__title" id="finale-title">
+          <span class="hw hw--finale" data-hw data-ink="bronze">See you in Uyo</span>
+        </h2>
+        <p class="finale__names" data-in data-after-hw style="--i:0">Zainab &amp; Mmedaraobong &middot; 2026</p>
+        <button class="finale__reset" id="resetGuest" type="button" data-in data-after-hw style="--i:1">Not <span id="resetName">you</span>? Start again</button>
+      </div>
+    </section>
+
+  </article>
+
+
+  <!-- Music on / off ............................................ -->
+  <button class="sound" id="soundToggle" type="button" aria-pressed="true" aria-label="Mute music">
+    <span class="sound__hint" id="soundHint" aria-hidden="true">Tap to mute</span>
+    <span class="sound__badge" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 4V5L7 9H3Zm13.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4Zm-2.5-8.8v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6Z"/></svg></span>
+    <svg class="sound__heart" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 21.2C6.2 16.6 2.5 13.3 2.5 8.9A4.9 4.9 0 0 1 12 6.6a4.9 4.9 0 0 1 9.5 2.3c0 4.4-3.7 7.7-9.5 12.3Z"/></svg>
+    <svg class="sound__off" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 21.2C6.2 16.6 2.5 13.3 2.5 8.9A4.9 4.9 0 0 1 12 6.6a4.9 4.9 0 0 1 9.5 2.3c0 4.4-3.7 7.7-9.5 12.3Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M4 4l16 16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+  </button>
+
+  <!-- Always-there shortcuts ...................................... -->
+  <nav class="dock" id="dock" aria-label="Shortcuts">
+    <a class="dock__link" href="#events"><svg aria-hidden="true"><use href="#ic-calendar"/></svg><span>Details</span></a>
+    <span class="dock__sep" aria-hidden="true"></span>
+    <a class="dock__link" href="#rsvp"><svg aria-hidden="true"><use href="#ic-phone"/></svg><span>RSVP</span></a>
+  </nav>
+</main>
+
+<script src="assets/js/guests.js?v=40"></script>
+<script src="assets/js/vendor/opentype.min.js"></script>
+<script src="assets/js/handwriting.js?v=40"></script>
+<script src="assets/js/invite.js?v=40"></script>
+</body>
+</html>
