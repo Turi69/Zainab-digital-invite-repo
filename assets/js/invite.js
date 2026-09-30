@@ -1429,12 +1429,12 @@
      after a gesture), fades in to 40%, fades out before the end of the
      track and back in as it loops. Volume goes through a Web Audio gain
      node because iOS ignores audio.volume. Fades out when the tab is hidden
-     and back in on return. The guest can mute it; that choice is kept.   */
+     and back in on return. Every visit starts with the music on; a mute
+     lasts until the page is closed.                                     */
 
   var music = (function () {
     var SRC = 'assets/audio/running-home-to-you.mp3';
     var LEVEL = 0.4, FADE_IN = 3, FADE_OUT = 4;
-    var MUTE_KEY = 'zm-invite-muted';
 
     var button = document.getElementById('soundToggle');
     var hint = document.getElementById('soundHint');
@@ -1444,7 +1444,8 @@
     var ctx = null, gain = null, analyser = null, bins = null, fallbackTimer = null;
     var started = false, fadingOut = false;
     var muted = false;
-    try { muted = localStorage.getItem(MUTE_KEY) === '1'; } catch (err) { /* no storage */ }
+    // Earlier versions remembered a mute across visits; forget it.
+    try { localStorage.removeItem('zm-invite-muted'); } catch (err) { /* no storage */ }
 
     function connect() {
       if (ctx) return;
@@ -1491,11 +1492,27 @@
       var attempt = audio.play();
       if (attempt && attempt.then) {
         attempt.then(function () { ramp(LEVEL, fade); render(); })
-               .catch(function () { render(); });
+               .catch(function () { render(); retryOnTouch(); });
       } else {
         ramp(LEVEL, fade);
       }
       render();
+    }
+
+    // If the browser holds the song back (no gesture it will accept), start
+    // it on the guest's next tap or key press anywhere on the page.
+    var retryArmed = false;
+    function retryOnTouch() {
+      if (retryArmed) return;
+      retryArmed = true;
+      var events = ['pointerdown', 'touchend', 'keydown'];
+      function go(event) {
+        if (button && button.contains(event.target)) return;   // the heart handles itself
+        events.forEach(function (e) { document.removeEventListener(e, go, true); });
+        retryArmed = false;
+        if (!muted && audio.paused) play(FADE_IN);
+      }
+      events.forEach(function (e) { document.addEventListener(e, go, true); });
     }
 
     function pause(fade) {
@@ -1553,8 +1570,8 @@
 
     if (button) {
       button.addEventListener('click', function () {
-        muted = !muted;
-        try { localStorage.setItem(MUTE_KEY, muted ? '1' : '0'); } catch (err) { /* no storage */ }
+        // A heart that is still silent (the song was held back) means "play".
+        muted = started && audio.paused && !muted ? false : !muted;
         if (muted) pause(0.8);
         else { if (!started) { started = true; connect(); } play(1.2); }
         render();

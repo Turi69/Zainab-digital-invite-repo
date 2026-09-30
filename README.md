@@ -101,8 +101,9 @@ seal (browsers only allow sound after a tap). It fades in to 40% volume over
 it loops, for as long as the page is open. It fades out when the tab is hidden
 and back in on return. The heart button at the top right beats with the music
 (it reads the track's bass through a Web Audio analyser) and mutes or unmutes
-it; a speaker badge and a brief "Tap to mute" label say what it does, and the
-guest's choice is remembered.
+it; a speaker badge and a brief "Tap to mute" label say what it does. Every
+visit starts with the music on; a mute lasts until the page is closed. If the
+browser holds the song back, it starts on the guest's next tap.
 
 To change the track, replace that file (or edit `SRC` in `assets/js/invite.js`).
 Levels and fade lengths are `LEVEL`, `FADE_IN` and `FADE_OUT` in the same place.
