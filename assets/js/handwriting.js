@@ -253,13 +253,135 @@
     }
   }
 
+  /* ── Hold the scroll while a line is written ─────────────────────────────
+     Every line on the card that is still to be written is a stopping point:
+     the page scrolls freely until that line nears the top of the screen, and
+     holds there until the pen lifts. Scrolling back up is never held. Taps on
+     in-page links (the dock's Details and RSVP) skip the hold. A line that is
+     being written always holds until it is done; one that has still not
+     started MAX_WAIT after the guest reached it lets them through. */
+  var hold = (function () {
+    var TOP = 0.14;            // the line may rise to 14% from the top
+    var MAX_WAIT = 6000;       // a line that has not started by then lets go
+    var active = new Set();
+    var suspendedUntil = 0;
+    var log = [];
+    var listening = false, touchY = null, reached = null, reachedAt = 0;
+
+    // The nearest stopping point: the smallest scroll position that brings
+    // an unfinished line up to TOP.
+    function limit() {
+      var vh = window.innerHeight || document.documentElement.clientHeight;
+      var min = Infinity, which = null;
+      active.forEach(function (el) {
+        var r = el.getBoundingClientRect();
+        if (!r.width && !r.height) return;          // hidden: no stopping point
+        var y = window.scrollY + r.top - vh * TOP;
+        if (y < min) { min = y; which = el; }
+      });
+      return { y: Math.max(0, min), el: which };
+    }
+
+    // True when the page is at a stopping point and should not go further.
+    function blocked() {
+      var l = limit();
+      if (!l.el || window.scrollY < l.y - 1) { reached = null; return false; }
+      var now = Date.now();
+      if (reached !== l.el) { reached = l.el; reachedAt = now; }
+      if (l.el.classList.contains('is-writing')) reachedAt = now;
+      else if (now - reachedAt > MAX_WAIT) {
+        log.push(['let through', l.el.textContent.trim().slice(0, 12)]);
+        end(l.el);
+        return false;
+      }
+      return true;
+    }
+
+    function onWheel(e) { if (e.deltaY > 0 && blocked()) e.preventDefault(); }
+    function onTouchStart(e) { touchY = e.touches[0].clientY; }
+    function onTouchMove(e) {
+      if (touchY === null) return;
+      var y = e.touches[0].clientY;
+      var down = y < touchY;            // finger moving up scrolls the page down
+      touchY = y;
+      if (down && blocked()) e.preventDefault();
+    }
+    function onKey(e) {
+      var keys = { ArrowDown: 1, PageDown: 1, End: 1, ' ': 1, Spacebar: 1 };
+      if (keys[e.key] && !e.shiftKey && blocked() &&
+          !/^(INPUT|TEXTAREA|SELECT)$/.test((e.target && e.target.tagName) || '')) e.preventDefault();
+    }
+    // A fling already in motion, or a dragged scrollbar, stops at the line.
+    function onScroll() {
+      var l = limit();
+      if (l.el && window.scrollY > l.y + 2 && blocked()) {
+        // Jump, not glide: the page's smooth scrolling is switched off for it.
+        var root = document.documentElement, was = root.style.scrollBehavior;
+        root.style.scrollBehavior = 'auto';
+        window.scrollTo(window.scrollX, l.y);
+        root.style.scrollBehavior = was;
+      }
+    }
+
+    function listen(on) {
+      if (on === listening) return;
+      listening = on;
+      var f = on ? 'addEventListener' : 'removeEventListener';
+      window[f]('wheel', onWheel, { passive: false });
+      window[f]('touchstart', onTouchStart, { passive: true });
+      window[f]('touchmove', onTouchMove, { passive: false });
+      window[f]('keydown', onKey);
+      window[f]('scroll', onScroll, { passive: true });
+      if (!on) { touchY = null; reached = null; }
+    }
+
+    function end(el) {
+      if (!active.delete(el)) return;
+      log.push(['end', el.textContent.trim().slice(0, 12), el.classList.contains('is-written') ? 'written' : 'unwritten']);
+      if (reached === el) reached = null;
+      if (!active.size) listen(false);
+    }
+
+    // `arriving` is true when a section has just come into view: its lines
+    // are held even if a fast fling has already carried them off the top,
+    // and the page comes back to them.
+    function start(el, arriving) {
+      if (reduceMotion.matches || active.has(el) || Date.now() < suspendedUntil) return;
+      if (!el.closest('.sheet') || el.classList.contains('is-written')) return;
+      // Otherwise a line the guest has already scrolled past is not held.
+      if (!arriving && el.getBoundingClientRect().bottom <= 0) return;
+      active.add(el);
+      listen(true);
+      onScroll();              // a fling that has just overshot comes back
+    }
+
+    function releaseAll(ms) {
+      suspendedUntil = Date.now() + (ms || 0);
+      Array.from(active).forEach(end);
+    }
+
+    document.addEventListener('click', function (e) {
+      var a = e.target.closest && e.target.closest('a[href^="#"]');
+      if (a) releaseAll(1600);
+    }, true);
+
+    return {
+      start: start, end: end, releaseAll: releaseAll,
+      // For checking on a device: what is holding the page, and why it let go.
+      debug: function () {
+        return { active: Array.from(active).map(function (el) { return el.textContent.trim().slice(0, 12); }), log: log.slice(-20) };
+      }
+    };
+  })();
+
   /* The pen keeps pace with the reader. Each frame it measures how fast the
      line is travelling up the screen and, if the reader is scrolling on, writes
      just fast enough to finish while the line is still in view. If the line
      leaves the screen anyway, the pen stops mid-word and carries on from the
-     same place when the reader comes back. The promise settles as soon as the
-     line is finished or first scrolled away, so the rest of the section never
-     waits on a line nobody is looking at. */
+     same place when the reader comes back. The promise settles when the line
+     is finished or scrolled past, so the rest of the section never waits on a
+     line the reader has left behind, while lines not yet reached keep their
+     order. */
   var MAX_RATE = 6;
 
   function animate(el, state) {
@@ -274,6 +396,7 @@
       pen.className = 'hw__pen';
       el.appendChild(pen);
       el.classList.add('is-writing');
+      hold.start(el);
 
       var t = 0;
       var last = null;
@@ -284,10 +407,12 @@
       var done = 0, doneLen = 0;  // strokes already complete, and their length
 
       // Off screen: stop the pen and wait until the line is back in view.
-      function pause() {
+      function pause(rect) {
         last = null; lastTop = null; velocity = 0;
         pen.style.opacity = 0;
-        resolve();
+        // Scrolled past (above): let the rest of the section carry on. Still
+        // below the screen: the lines after it wait their turn.
+        if (rect.bottom <= 0) resolve();
         if (!('IntersectionObserver' in window)) { requestAnimationFrame(frame); return; }
         waiting = new IntersectionObserver(function (entries) {
           if (!entries[0].isIntersecting) return;
@@ -302,7 +427,7 @@
         var rect = el.getBoundingClientRect();
         var vh = window.innerHeight || document.documentElement.clientHeight;
         var shown = rect.height === 0 || (rect.bottom > 0 && rect.top < vh);
-        if (!shown) { pause(); return; }
+        if (!shown) { pause(rect); return; }
 
         var dt = last === null ? 0 : Math.min(0.1, (now - last) / 1000);
         if (dt > 0 && lastTop !== null) {
@@ -353,6 +478,7 @@
         pen.classList.add('is-lifting');
         window.setTimeout(function () { pen.remove(); }, 500);
         finish(el, state);
+        hold.end(el);
         resolve();
       }
       requestAnimationFrame(frame);
@@ -389,6 +515,7 @@
           window.setTimeout(function () {
             el.classList.remove('is-writing');
             el.classList.add('is-written');
+            hold.end(el);
             resolve();
           }, reduceMotion.matches ? 0 : 1600);
         });
@@ -404,5 +531,5 @@
     el.textContent = text;
   }
 
-  window.Handwriting = { load: loadFont, prepare: prepare, write: write, setText: setText };
+  window.Handwriting = { load: loadFont, prepare: prepare, write: write, setText: setText, hold: hold };
 })();

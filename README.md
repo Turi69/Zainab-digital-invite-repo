@@ -169,6 +169,14 @@ parchment), `gold` (the Figma gold chrome, for burgundy) or `ink` (for the note)
 
 If the font cannot load, the text stays live and is wiped in with CSS instead.
 
+**The scroll waits for the pen.** Every unwritten line on the card is a
+stopping point: the page scrolls until that line is 14% from the top of the
+screen and holds there until it is written (the personal note's word-by-word
+reveal too). Scrolling up is never held; the dock's Details and RSVP links skip
+the hold; a line that has not started 6 seconds after the guest reaches it lets
+them through. With Reduce Motion on, lines appear at once and nothing is held.
+`Handwriting.hold.debug()` in the console lists what is holding and why it let go.
+
 - Font: `assets/fonts/GreatVibes-sub.ttf`, Great Vibes (SIL Open Font Licence),
   subset to Latin and Latin Extended-A so accented names still write.
 - Library: `assets/js/vendor/opentype.min.js`, opentype.js 1.3.4 (MIT).

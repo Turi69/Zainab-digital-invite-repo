@@ -621,6 +621,8 @@
     startSlideshow(hero);
     var names = Array.prototype.slice.call(hero.querySelectorAll('.hero__names [data-hw]'));
     var afterNames = Array.prototype.slice.call(hero.querySelectorAll('[data-hw][data-after-names]'));
+    // Every line in the hero holds the scroll until it has been written.
+    names.concat(afterNames).forEach(function (node) { window.Handwriting.hold.start(node, true); });
 
     // Florals grow in, the photo rises into its arch and the seal presses
     // down; the pen starts once the portrait has settled.
@@ -652,7 +654,19 @@
         playPiece(entry.target);
       });
     }, { threshold: 0.28, rootMargin: '0px 0px -6% 0px' });
-    rest.forEach(function (p) { observer.observe(p); });
+    // As soon as a section peeks in, its handwriting (and the note's words)
+    // become stopping points, so even a fast fling halts at the first line
+    // and lets the section write itself before the guest moves on.
+    var arriving = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        arriving.unobserve(entry.target);
+        Array.prototype.forEach.call(entry.target.querySelectorAll('[data-hw]:not(.is-written), [data-words]'), function (node) {
+          window.Handwriting.hold.start(node, true);
+        });
+      });
+    }, { threshold: 0 });
+    rest.forEach(function (p) { observer.observe(p); arriving.observe(p); });
   }
 
   function playPiece(piece) {
@@ -671,9 +685,12 @@
       written
         .then(function () {
           piece.classList.add('is-reading');
+          // The note arrives word by word; hold the scroll on it as it does.
+          window.Handwriting.hold.start(words);
           return wait(count * 55 + 500);
         })
         .then(function () {
+          window.Handwriting.hold.end(words);
           piece.classList.add('is-words-done');
           return wait(500);
         })
