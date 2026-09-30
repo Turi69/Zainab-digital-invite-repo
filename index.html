@@ -19,7 +19,7 @@
 <link rel="preload" as="fetch" href="assets/fonts/GreatVibes-sub.ttf" type="font/ttf" crossorigin />
 <link rel="preload" as="image" href="assets/img/paper-bg.webp" />
 <link rel="preload" as="image" href="assets/img/hero-couple.webp" />
-<link rel="stylesheet" href="assets/css/invite.css?v=46" />
+<link rel="stylesheet" href="assets/css/invite.css?v=47" />
 </head>
 <body class="is-sealed">
 
@@ -367,17 +367,18 @@
         <svg class="doodle doodle--heart" viewBox="0 0 120 52" data-in style="--i:1" aria-hidden="true" focusable="false">
           <path pathLength="1" d="M4 46c18 0 40 0 56-2-14-10-26-18-24-28 2-8 14-10 20-4 2 2 4 5 4 8 0-3 2-6 4-8 6-6 18-4 20 4 2 10-10 18-24 28 16 2 38 2 56 2" />
         </svg>
-        <p class="rsvp__lead" data-in style="--i:2">Let us know you are coming, so there is a seat and a plate with your name on it.</p>
+        <p class="rsvp__lead" data-in style="--i:2">Tell us if you can make it, so we can save you a seat and a plate with your name on it.</p>
         <p class="rsvp__number" data-in style="--i:3"><a href="tel:+2347031299072">0703 129 9072</a></p>
 
-        <div class="actions" data-in style="--i:4">
-          <a class="btn btn--gold" href="tel:+2347031299072">
-            <svg aria-hidden="true"><use href="#ic-phone"/></svg><span>Call</span>
+        <div class="actions actions--rsvp" data-in style="--i:4">
+          <a class="btn btn--gold" id="rsvpYes" href="https://wa.me/2347031299072" target="_blank" rel="noopener">
+            <svg aria-hidden="true"><use href="#ic-heart"/></svg><span data-rsvp-label>Yes, I’ll be there</span>
           </a>
-          <a class="btn btn--ghost" id="rsvpWhatsApp" href="https://wa.me/2347031299072" target="_blank" rel="noopener">
-            <svg aria-hidden="true"><use href="#ic-chat"/></svg><span>WhatsApp</span>
+          <a class="btn btn--ghost" id="rsvpNo" href="https://wa.me/2347031299072" target="_blank" rel="noopener">
+            <svg aria-hidden="true"><use href="#ic-chat"/></svg><span data-rsvp-label>Sadly, I can’t make it</span>
           </a>
         </div>
+        <p class="rsvp__note" data-in style="--i:5">Either one opens WhatsApp with a note ready to send.</p>
       </div>
     </section>
 
@@ -417,7 +418,7 @@
 </main>
 
 <script src="assets/js/vendor/opentype.min.js"></script>
-<script src="assets/js/handwriting.js?v=46"></script>
-<script src="assets/js/invite.js?v=46"></script>
+<script src="assets/js/handwriting.js?v=47"></script>
+<script src="assets/js/invite.js?v=47"></script>
 </body>
 </html>

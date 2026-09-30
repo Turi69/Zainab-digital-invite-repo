@@ -25,7 +25,8 @@
     guestMessage: document.getElementById('guestMessage'),
     resetName:    document.getElementById('resetName'),
     resetGuest:   document.getElementById('resetGuest'),
-    whatsApp:     document.getElementById('rsvpWhatsApp'),
+    rsvpYes:      document.getElementById('rsvpYes'),
+    rsvpNo:       document.getElementById('rsvpNo'),
     dock:         document.getElementById('dock'),
     ambient:      document.getElementById('ambient')
   };
@@ -62,13 +63,40 @@
     if (el.resetName)    el.resetName.textContent = salutation;
     if (el.envelopeName) window.Handwriting.setText(el.envelopeName, 'To ' + salutation);
     if (el.guestMessage) el.guestMessage.textContent = (entry && entry.message) || defaultMessage;
-    if (el.whatsApp) {
-      var who = salutation === 'friend' ? '' : ', this is ' + salutation;
-      var text = 'Hello' + who + '. I am replying to Zainab and Mmedaraobong’s wedding invitation.';
-      el.whatsApp.href = 'https://wa.me/2347031299072?text=' + encodeURIComponent(text);
-    }
+    setRsvp(entry ? salutation : '');
     document.title = entry ? salutation + ', you are invited' : 'Zainab & Mmedaraobong: you are invited';
   }
+
+  // The two RSVP buttons open WhatsApp with a reply already written. A couple
+  // or a family ("Mummy and Daddy", "The Alis") answers as "we".
+  var RSVP_NUMBER = '2347031299072';
+  function setRsvp(name) {
+    var we = /\s(and|&)\s|^the\s/i.test(name);
+    var hi = 'Hello Zainab and Mmedaraobong' + (name ? ', it’s ' + (we ? 'us, ' : '') + name : '') + '.';
+    var replies = {
+      yes: {
+        label: we ? 'Yes, we’ll be there' : 'Yes, I’ll be there',
+        text: hi + ' Thank you so much for the beautiful invitation. ' +
+          (we ? 'We are delighted to say yes: we will be there in Uyo to celebrate with you, and we cannot wait to see you both. '
+              : 'I am delighted to say yes: I will be there in Uyo to celebrate with you, and I cannot wait to see you both. ') +
+          'Congratulations 🤍'
+      },
+      no: {
+        label: we ? 'Sadly, we can’t make it' : 'Sadly, I can’t make it',
+        text: hi + ' Thank you so much for the beautiful invitation, it truly means a lot. ' +
+          (we ? 'Sadly, we will not be able to make it, but we will be with you in spirit and cheering you on from afar. '
+              : 'Sadly, I will not be able to make it, but I will be with you in spirit and cheering you on from afar. ') +
+          'Wishing you both a lifetime of love and joy 🤍'
+      }
+    };
+    [[el.rsvpYes, replies.yes], [el.rsvpNo, replies.no]].forEach(function (pair) {
+      if (!pair[0]) return;
+      pair[0].href = 'https://wa.me/' + RSVP_NUMBER + '?text=' + encodeURIComponent(pair[1].text);
+      var label = pair[0].querySelector('[data-rsvp-label]');
+      if (label) label.textContent = pair[1].label;
+    });
+  }
+  setRsvp('');
 
   function rememberGuest(name) {
     try {
