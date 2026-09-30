@@ -32,7 +32,7 @@
   --gold-line:  rgba(212, 160, 65, 0.72);
 
   --on-dark:      #ECEAE3;
-  --on-dark-soft: rgba(236, 234, 227, 0.84);
+  --on-dark-soft: var(--ivory);   /* secondary text on burgundy */
 
   --on-burgundy:         #FFFFFF;
   --on-burgundy-soft:    rgba(255, 255, 255, 0.87);
@@ -603,6 +603,10 @@ a {
   padding: var(--s-20) var(--gutter);
   text-align: center;
   overflow: hidden;
+  /* The drifting light and bokeh layers are larger than the band and blend
+     with it. overflow alone does not always trim a blended, animated layer
+     in Chromium, which let one band bleed over the next; clip-path does. */
+  clip-path: inset(0);
   isolation: isolate;
 }
 .piece__body {
@@ -1473,11 +1477,6 @@ a {
 @media (max-width: 599px) {
   .actions--rsvp { flex-direction: column; align-items: center; }
   .actions--rsvp .btn { width: min(100%, 19rem); min-width: 0; }
-}
-.rsvp__note {
-  margin-top: var(--s-4);
-  font-size: 0.85rem;
-  color: var(--on-dark-soft);
 }
 
 .btn--ghost-dark {
