@@ -623,7 +623,7 @@
 
     // Florals grow in, the photo rises into its arch and the seal presses
     // down; the pen starts once the portrait has settled.
-    wait(2600)
+    wait(2000)
       .then(function () {
         return names.reduce(function (chain, node, i) {
           return chain.then(function () {

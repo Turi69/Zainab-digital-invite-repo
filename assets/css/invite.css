@@ -791,6 +791,11 @@ a {
 }
 .hw[data-ink="gold"] .hw__svg { filter: drop-shadow(0 1px 0 rgba(70, 30, 0, 0.55)) drop-shadow(0 3px 10px rgba(20, 0, 8, 0.55)); }
 .hw[data-ink="ink"] .hw__svg  { filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.6)); }
+/* Shadows would be re-rendered on every frame of the pen; they settle in
+   once the line is written instead. */
+.hw__svg { transition: filter 0.6s ease; }
+.hw.is-writing .hw__svg { filter: none; }
+.hw.is-offscreen .hw__star { animation-play-state: paused; }
 
 .hw__shine { opacity: 0; transition: opacity 1s ease; }
 .hw.is-written .hw__shine { opacity: 1; }
@@ -798,9 +803,11 @@ a {
 /* The spark on the nib. */
 .hw__pen {
   position: absolute;
+  top: 0; left: 0;
   z-index: 2;
   width: 26px; height: 26px;
   margin: -13px 0 0 -13px;
+  will-change: transform;
   pointer-events: none;
   opacity: 0;
   border-radius: 50%;

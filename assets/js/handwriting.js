@@ -23,7 +23,7 @@
   var UNITS = 100;        // glyph size in SVG user units
   var MASK_W = 15;        // mask stroke width: wider than the heaviest stem
   var PAD = 10;           // viewBox padding so embers and the nib are not clipped
-  var SPEED = 2300;       // outline units per second
+  var SPEED = 3400;       // outline units per second
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
   var fontPromise = null;
@@ -227,10 +227,24 @@
 
   function ease(t) { return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; }
 
+  // A written line keeps a slow shimmer and a few twinkling stars. Both stop
+  // while the line is off screen, so finished lines cost nothing to scroll
+  // past on a phone.
+  var idleWatch = 'IntersectionObserver' in window ? new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      var svg = entry.target.querySelector('.hw__svg');
+      entry.target.classList.toggle('is-offscreen', !entry.isIntersecting);
+      try {
+        if (entry.isIntersecting) svg.unpauseAnimations(); else svg.pauseAnimations();
+      } catch (err) { /* SMIL unsupported */ }
+    });
+  }, { rootMargin: '80px 0px' }) : null;
+
   function finish(el, state) {
     state.strokes.forEach(function (s) { s.path.style.strokeDashoffset = 0; });
     el.classList.remove('is-writing');
     el.classList.add('is-written');
+    if (idleWatch) idleWatch.observe(el);
     if (!reduceMotion.matches) {
       try { state.shine.beginElement(); } catch (err) { /* SMIL unsupported: no glint */ }
       var stars = parseInt(el.getAttribute('data-stars') || '', 10);
@@ -252,7 +266,7 @@
     return new Promise(function (resolve) {
       var total = state.strokes.reduce(function (sum, s) { return sum + s.len; }, 0);
       var speed = parseFloat(el.getAttribute('data-speed')) || SPEED;
-      var duration = Math.max(700, Math.min(4200, (total / speed) * 1000));
+      var duration = Math.max(500, Math.min(2600, (total / speed) * 1000));
 
       if (reduceMotion.matches) { finish(el, state); resolve(); return; }
 
@@ -267,6 +281,7 @@
       var velocity = 0;          // px per second the line is rising, smoothed
       var lastEmber = 0;
       var waiting = null;
+      var done = 0, doneLen = 0;  // strokes already complete, and their length
 
       // Off screen: stop the pen and wait until the line is back in view.
       function pause() {
@@ -279,7 +294,7 @@
           waiting.disconnect();
           waiting = null;
           requestAnimationFrame(frame);
-        }, { threshold: 0.6 });
+        }, { threshold: 0.1 });
         waiting.observe(el);
       }
 
@@ -307,23 +322,31 @@
         }
         t = Math.min(1, t + (dt * 1000 * rate) / duration);
         var drawn = ease(t) * total;
-        var acc = 0;
         var nib = null;
 
-        for (var i = 0; i < state.strokes.length; i++) {
+        // Touch only the strokes the pen is on: finished ones are set once and
+        // left alone, and the ones ahead have not been reached yet.
+        var acc = doneLen;
+        for (var i = done; i < state.strokes.length; i++) {
           var s = state.strokes[i];
           var local = Math.max(0, Math.min(s.len, drawn - acc));
+          if (local <= 0) break;
           s.path.style.strokeDashoffset = s.len - local;
-          if (!nib && local > 0 && local < s.len) nib = s.path.getPointAtLength(local);
+          if (local >= s.len) {
+            if (i === done) { done += 1; doneLen += s.len; }
+          } else if (!nib) {
+            nib = s.path.getPointAtLength(local);
+          }
           acc += s.len;
         }
 
         if (nib) {
           var p = toPercent(state, nib);
-          pen.style.left = p.x + '%';
-          pen.style.top = p.y + '%';
+          // Moved with a transform, which the compositor handles without layout.
+          pen.style.transform = 'translate3d(' + (p.x * rect.width / 100).toFixed(1) + 'px,' +
+            (p.y * rect.height / 100).toFixed(1) + 'px,0)';
           pen.style.opacity = 1;
-          if (now - lastEmber > 45) { ember(el, p); lastEmber = now; }
+          if (now - lastEmber > 80) { ember(el, p); lastEmber = now; }
         }
 
         if (t < 1) { requestAnimationFrame(frame); return; }
