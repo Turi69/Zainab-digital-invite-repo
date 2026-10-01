@@ -194,6 +194,4 @@ them through. With Reduce Motion on, lines appear at once and nothing is held.
 | "Specially invite you" | `index.html` | The print says "Specially invites"; with two sets of parents the verb is plural. |
 | Guest list | `private/guests.json` | Five sample entries. |
 
-Unused files from the previous build can be deleted: `event-white.webp`,
-`floral-archway.webp`, `floral-overlay.webp`, `flourish-*.png`,
-`photo-1/2/3.webp` and `sticker-*.webp` in `assets/img`.
+Link previews use `assets/img/share.jpg` (the ZM seal on burgundy). No photos of the couple are in the site.
